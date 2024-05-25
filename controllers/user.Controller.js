@@ -60,7 +60,7 @@ class UserController {
             //выносим логику в сервис
             const data = await user_service.newEntry(newEntry)
             if (data.userAlreadyRecorded) {
-                return next(ApiError.badRequest(`Пользователь ${newEntry.user} 
+                return next(ApiError.badRequest(`${newEntry.user} 
                     уже записан(а) ${newEntry.date} в ${newEntry.time}:00  ${data.alreadyRec.dataValues.sectionOrOrganization}`));
             }
 
