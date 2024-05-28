@@ -24,6 +24,7 @@ router.get('/auth', authMiddleware, userController.check)  // тут Middleware 
 //Продвинутая JWT авторизация на React и Node js.   пересмотреть начиная с 60 мин
 
 router.post('/addEntry', userController.addEntry)
+router.post('/changeWorkStatus', userController.changeWorkStatus)
 router.post('/setSettings', userController.setSettings)
 router.post('/addOrg', userController.addOrg)
 router.post('/addNewOrg', userController.addNewOrg)

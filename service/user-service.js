@@ -189,6 +189,18 @@ class UserService {
     }
 
 
+    async changeWorkStatus(dataForChangeStatus) {
+        const workStatus = dataForChangeStatus.state === 'open' ? 'closed' : 'open';
+        const data = {
+            date: dataForChangeStatus.date,
+            time: dataForChangeStatus.time,
+            idOrg: dataForChangeStatus.idOrg
+        }
+        await this.changeWorkStatusOrg(workStatus, data)
+        return {workStatus, data}
+    }
+
+
 
     async newEntry(newEntry) {
         const date = newEntry.date
@@ -203,14 +215,12 @@ class UserService {
         const sectionOrOrganization = newEntry.sectionOrOrganization
         const orgId = newEntry.idOrg
         const workStatus = newEntry.workStatus === 0? 'closed': 'open'
-        //проверка записан ли userId на выбранный день
-
-        //берем все записи за выбранную дату
+                                     //проверка записан ли userId на выбранный день  //берем все записи за выбранную дату
         const allEntriesForTheSelectedDate = await TableOfRecords.findAll({where: {date}})
-        //Фильтруем по выбранному времени
+                                                                        //Фильтруем по выбранному времени
         const selectedTime = allEntriesForTheSelectedDate
             .filter(el=> el.time === time)
-        //Проверяем есть ли текущий пользователь в это время где то еще?
+                                                                        //Проверяем есть ли текущий пользователь в это время где то еще?
         const userAlreadyRecorded = selectedTime.find(el=> el.userId === userId)
 
         if (userAlreadyRecorded) {
@@ -237,9 +247,10 @@ class UserService {
         const newUserAccount = await TableOfRecords.create({date, dateYear, dateMonth,dateNum, time, nameUser,workStatus, userId, remainingFunds, sectionOrOrganization, orgId})
         const mailAdminOrg = await this.getMailAdminOrg(orgId)
         const userData = await TableOfRecords.findAll({where: {date}})
-
         return {userData, emailAdmin: mailAdminOrg}
     }
+
+
 
     //Функция меняющая статус работы организации
     async changeWorkStatusOrg (workStatus, dataEntry) {
@@ -247,21 +258,23 @@ class UserService {
         if (!dataEntry.idOrg) {                     //  значит идет процесс удаления
             dataEntry.idOrg = dataEntry.orgId
         }
-        const date = dataEntry.date
-        const time = dataEntry.time
         const orgId = dataEntry.idOrg
-
-        //  берем в таблице всех записей, записи организации по idOrg
         const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId}})
         const arrEntries = allEntriesThisOrg.map(en => en.dataValues)
+        const arrRec = arrEntries
+            .filter((el)=> el.date === dataEntry.date)
+            .filter(el=> el.time === dataEntry.time)
 
-        const arrRec = arrEntries.filter((el)=> el.date === date).filter(el=> el.time === time)
+        if (!arrRec.length || arrRec[0].userId === '*1') {
+            await this.createStub(workStatus, dataEntry)
+        }
+
         const newArrRec = []
-        arrRec.forEach(el=> {
+          arrRec.forEach(el=> {
             el.workStatus = workStatus;
             newArrRec.push(el)
         })
-        // перезаписать все строки таблицы которые мы взяли
+
         newArrRec.forEach(el=> {
             const writableField = {    //данные перезаписываемых полей
                 date: el.date,
@@ -281,12 +294,37 @@ class UserService {
             if (deleted && el.idRec !== dataEntry.idRec) {  //если идет удаление перезаписываем статусы всех записей кроме удаляемой
                 TableOfRecords.create(writableField)
             }
-            if (!deleted) {   //при добавлении просто перезапись workStatus
+            if (!deleted  && writableField.userId !== '*1') {   //при добавлении просто перезапись workStatus
                 TableOfRecords.create(writableField)
             }
         })
     }
 
+
+    //функция создающая заглушку, чтоб закрыть нужное время если никто в это время не записан
+    async createStub(workStatus, dataEntry) {
+        if (workStatus === 'closed') {
+            const stub = {
+                date: dataEntry.date,
+                dateYear:dataEntry.date.substring(dataEntry.date.length - 4),
+                dateMonth:dataEntry.date.substring(3,5),
+                dateNum: dataEntry.date.slice(0,2),
+                time:dataEntry.time,
+                nameUser: '...запись закрыта...',
+                workStatus: workStatus,
+                userId: '*1',
+                remainingFunds: '*1',
+                sectionOrOrganization: '*1',
+                orgId: dataEntry.idOrg
+            }
+            await TableOfRecords.create(stub)
+        } else {
+            if (dataEntry.idRec){
+                await TableOfRecords.destroy({where: {idRec: dataEntry.idRec}})
+            }
+        }
+
+    }
 
 
     //функция, которая достает почту админа организации по idOrg
