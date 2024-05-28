@@ -259,8 +259,9 @@ class UserController {
             const restoreBalance = req.params.userId
             const orgId = req.params.orgId
             const userCancelHimselfRec = req.params.userCancelHimselfRec
+            const workStatus = req.params.workStatus === 0? 'closed' : 'open'
         //выносим логику в сервис
-            const dataAboutDeleteRec = await user_service.dataAboutDeleteRec(deleteEntryId)
+            const dataAboutDeleteRec = await user_service.dataAboutDeleteRec(deleteEntryId, workStatus)
             const emailUser = dataAboutDeleteRec.userEmail
             const deleteUserId = await user_service.deleteEntry(deleteEntryId, restoreBalance, orgId)
             const mailAdmin = await user_service.getMailAdminOrg(orgId)

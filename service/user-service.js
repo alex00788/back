@@ -202,6 +202,7 @@ class UserService {
         const strUserId = JSON.stringify(userId)
         const sectionOrOrganization = newEntry.sectionOrOrganization
         const orgId = newEntry.idOrg
+        const workStatus = newEntry.workStatus === 0? 'closed': 'open'
         //проверка записан ли userId на выбранный день
 
         //берем все записи за выбранную дату
@@ -229,13 +230,63 @@ class UserService {
         // перезаписываем тока это поле
         await refreshFindFieldRemainingFunds.save({fields: ['remainingFunds']})
 
+        await this.changeWorkStatusOrg(workStatus, newEntry)
+        //на фронте принимаем эти данные и добавляем в иф условие показавать когда открыто
+
         //новая запись в календаре
-        const newUserAccount = await TableOfRecords.create({date, dateYear, dateMonth,dateNum, time, nameUser, userId, remainingFunds, sectionOrOrganization, orgId})
+        const newUserAccount = await TableOfRecords.create({date, dateYear, dateMonth,dateNum, time, nameUser,workStatus, userId, remainingFunds, sectionOrOrganization, orgId})
         const mailAdminOrg = await this.getMailAdminOrg(orgId)
         const userData = await TableOfRecords.findAll({where: {date}})
 
         return {userData, emailAdmin: mailAdminOrg}
     }
+
+    //Функция меняющая статус работы организации
+    async changeWorkStatusOrg (workStatus, dataEntry) {
+        const deleted = !dataEntry.idOrg   // при удалении idOrg называется orgId  поэтому такая проверка
+        if (!dataEntry.idOrg) {                     //  значит идет процесс удаления
+            dataEntry.idOrg = dataEntry.orgId
+        }
+        const date = dataEntry.date
+        const time = dataEntry.time
+        const orgId = dataEntry.idOrg
+
+        //  берем в таблице всех записей, записи организации по idOrg
+        const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId}})
+        const arrEntries = allEntriesThisOrg.map(en => en.dataValues)
+
+        const arrRec = arrEntries.filter((el)=> el.date === date).filter(el=> el.time === time)
+        const newArrRec = []
+        arrRec.forEach(el=> {
+            el.workStatus = workStatus;
+            newArrRec.push(el)
+        })
+        // перезаписать все строки таблицы которые мы взяли
+        newArrRec.forEach(el=> {
+            const writableField = {    //данные перезаписываемых полей
+                date: el.date,
+                dateYear:el.dateYear,
+                dateMonth:el.dateMonth,
+                dateNum: el.dateNum,
+                time:el.time,
+                nameUser:el.nameUser,
+                workStatus: el.workStatus,
+                userId: el.userId,
+                remainingFunds: el.remainingFunds,
+                sectionOrOrganization: el.sectionOrOrganization,
+                orgId: el.orgId
+            }
+
+            TableOfRecords.destroy({where: {idRec: el.idRec}})
+            if (deleted && el.idRec !== dataEntry.idRec) {  //если идет удаление перезаписываем статусы всех записей кроме удаляемой
+                TableOfRecords.create(writableField)
+            }
+            if (!deleted) {   //при добавлении просто перезапись workStatus
+                TableOfRecords.create(writableField)
+            }
+        })
+    }
+
 
 
     //функция, которая достает почту админа организации по idOrg
@@ -267,11 +318,10 @@ class UserService {
         return deleteUser
     }
 
-    async dataAboutDeleteRec(idRec) {
+    async dataAboutDeleteRec(idRec, workStatus) {
         const dataAboutDeletePerson = await TableOfRecords.findOne({where: {idRec}})
-        console.log('270', dataAboutDeletePerson.dataValues.userId)
+        await this.changeWorkStatusOrg(workStatus, dataAboutDeletePerson.dataValues)
         const mailUser = await User.findOne({where: {id: dataAboutDeletePerson.dataValues.userId}})
-        console.log('272', mailUser.email)
         dataAboutDeletePerson.dataValues.emailUser = mailUser.email
         return dataAboutDeletePerson
     }

@@ -38,7 +38,7 @@ router.get('/getAllEntryCurrentUser', userController.getAllEntryCurrentUser)
 router.get('/getAllOrg', userController.getAllOrg)
 router.get('/getAllUsers', userController.getAllUsersToFillInput)
 router.get('/getAllUsersCurrentOrganization', userController.getAllUsersCurrentOrganization)
-router.delete('/deleteEntry/:id/:userId/:orgId/:userCancelHimselfRec', userController.deleteOwnEntry)
+router.delete('/deleteEntry/:id/:userId/:orgId/:userCancelHimselfRec/:workStatus', userController.deleteOwnEntry)
 router.get('/getAllEntryInCurrentTimes', userController.getAllEntryInCurrentTimes)
 
 
