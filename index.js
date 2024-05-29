@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const path = require('path')
 const sequelize = require('./db')
+const usServ = require('./service/user-service')
 // const models = require('./models/models')
 const cors = require('cors')
 const router = require('./routes/rout_index')
@@ -39,6 +40,8 @@ const start = async () => {
     try {
         await sequelize.authenticate()     //подключение к postgresql
         await sequelize.sync()             //   сверяет состояние бд со схемой
+
+        await usServ.checkRecordForSendMail()   // запускает таймер отправки сообщения тем кто записан за 5 ч
 
         app.listen(PORT, ()=> console.log(`!!!server started on port: ${PORT}`))
     } catch (e) {

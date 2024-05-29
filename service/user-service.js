@@ -15,6 +15,7 @@ const {Organization} = require("../models/models");
 const e = require("express");
 const {Json} = require("sequelize/lib/utils");
 const UserDtoRole = require("../dto/user_dto_chenge_role");
+const moment = require("moment");
 
 class UserService {
     role = ''
@@ -118,6 +119,46 @@ class UserService {
         //сохраняем польз в БД
         await user.save();
     }
+
+
+
+    //Функция 1 раз в час смотрт в базу данных, чтоб отправить напоминание
+    async checkRecordForSendMail() {
+        let interval = setInterval(()=> {
+           const date = moment().format('DD.MM.YYYY')
+           this.getDataForCheck(date)
+        }, 3600000)
+    }
+
+    //берем записи на сегодняшний день
+    async getDataForCheck(date) {
+        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
+        const cleanArr = allEntriesForThisDate.map(el=> el.dataValues)
+        const sortTim = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const currentHour = moment().format('HH')
+        sortTim.forEach(el=> {
+            setTimeout(()=> {                         // если осталось 4 часа до записи
+                if (currentHour === JSON.stringify(+el.time - 4) && el.userId !== '*1') {
+                    this.getDataForSendNotification(el)
+                }
+            },2000)
+        })
+    }
+
+    // функция берет почту клиента и отправляет ему письмо, что он записан
+    async getDataForSendNotification(user) {
+        const dataUser = await User.findOne({where: {id: user.userId}})
+        const dataNotification = {
+            name: dataUser.dataValues.nameUser,
+            email: dataUser.dataValues.email,
+            dateRec: user.date,
+            timeRec: user.time,
+            org: user.sectionOrOrganization
+        }
+        //разблокировать когда все почты будут настоящими
+        // await mailService.sendNotificationAboutRec(dataNotification)
+    }
+
 
 
     async newOrg(newOrgData) {

@@ -31,8 +31,12 @@ class MailService {
                         <h3>Для завершения активации нажмите: <a href="${link}">подтвердить Email</a></h3>
                     </div>
                     <div>
-                    <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
-                    <p> С уважением, команда <strong style="color: #2630f1; cursor: pointer">ЗаписьКпрофи.рф </strong></p>   
+                      <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
+                      <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                      </p>   
                     </div>`
             }, (err, data) => {                   //если почта указана неверно перехватываем ошибку
 
@@ -56,14 +60,20 @@ class MailService {
                 text: JSON.stringify(newOrg),
                 html:
                     `<div>
-                    <h1>данные новой организации: </h1>
-                    <p>организация</p>
-                    ${newOrg.nameSectionOrOrganization}
-                    <p>тел</p>
-                    ${newOrg.phoneNumber}
-                    <p>руководитель</p>
-                    ${newOrg.nameSupervisor}
-                </div>`
+                        <h1>данные новой организации: </h1>
+                        <p>организация</p>
+                        ${newOrg.nameSectionOrOrganization}
+                        <p>тел</p>
+                        ${newOrg.phoneNumber}
+                        <p>руководитель</p>
+                        ${newOrg.nameSupervisor}
+                    
+                        <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                        </p>  
+                    </div>`
             },
         )
     }
@@ -78,11 +88,16 @@ class MailService {
                 text: nameUser,
                 html:
                     `<div>
-                    <h1>Новая запись:</h1>
-                    <p>Клиент: ${nameUser}</p>
-                    <p>запись: ${date} в ${time}</p>
-                    <p>${sectionOrOrganization}</p>
-                </div>`
+                        <h1>Новая запись:</h1>
+                        <p>Клиент: ${nameUser}</p>
+                        <p>запись: ${date} в ${time}</p>
+                        <p>${sectionOrOrganization}</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>`
             },
         )
     }
@@ -97,11 +112,16 @@ class MailService {
                 text: nameUser,
                 html:
                     `<div>
-                    <h1>Отмена записи!</h1>
-                    <p>Клиент: ${nameUser}</p>
-                    <p>Отменил запись: ${date} в ${time}</p>
-                    <p>${sectionOrOrganization}</p>
-                </div>`
+                        <h1>Отмена записи!</h1>
+                        <p>Клиент: ${nameUser}</p>
+                        <p>Отменил запись: ${date} в ${time}</p>
+                        <p>${sectionOrOrganization}</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>`
             },
         )
     }
@@ -117,14 +137,19 @@ class MailService {
             text: nameUser,
                 html:
                     `<div>
-                    <h3>Уважаемый(-ая) ${nameUser}</h3>
-                    <p>К сожалению, по техническим причинам ваша запись </p>
-                    <p>${date} в ${time} : 00</p>
-                    <p>${sectionOrOrganization}</p>
-                    <p> ОТМЕНЕНА!</p>
-                    <p> Приносим извинения за доставленные неудобства!</p>
-                    <p> Пожалуйста, выберите любое другое удобное для вас время! </p>
-                </div>`
+                        <h3>Уважаемый(-ая) ${nameUser}</h3>
+                        <p>К сожалению, по техническим причинам ваша запись </p>
+                        <p>${date} в ${time} : 00</p>
+                        <p>${sectionOrOrganization}</p>
+                        <p> ОТМЕНЕНА!</p>
+                        <p> Приносим извинения за доставленные неудобства!</p>
+                        <p> Пожалуйста, выберите любое другое удобное для вас время! </p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
             },
         )
     }
@@ -141,12 +166,41 @@ class MailService {
                         <p>
                           ${descriptions} 
                         </p>
-                    </div>`
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
             },
         )
     }
 
 
+    sendNotificationAboutRec(dataNotification) {     // отправка пользователю напоминания о записи
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: dataNotification.email,
+                subject: `Напоминание о записи ${dataNotification.org}`,
+                text: 'textNull',
+                html:
+                    `<div>
+                        <h3>Уважаемый(-ая) ${dataNotification.name}</h3>
+                        <p>Напоминаем вам, что вы записаны</p>
+                        <p>${dataNotification.dateRec} в ${dataNotification.timeRec} : 00</p>
+                        <p>${dataNotification.org}</p>
+                        <p> Если у вас изменились планы,</p>
+                        <p> Пожалуйста, отмените запись в личном кабинете,</p>
+                        <p> Чтобы, избежать блокировки в дальнейшем!</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
+            },
+        )
+    }
 
 
 }
