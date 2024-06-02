@@ -200,11 +200,12 @@ class UserService {
 
 
     async setSettings(newSettings) {
+        await this.changeWorkStatusAllEntries(newSettings)
         // найти в бд пользователя и перезаписать строку с настройками
         // находим все записи пользователя
         const findOrgInDataUserAboutOrg = await DataUserAboutOrg.findAll({where: {userId: newSettings.userId}})
         //находим текущую организацию
-        const currentOrg = findOrgInDataUserAboutOrg.find(org=> org.idOrg === newSettings.orgId)
+        const currentOrg = findOrgInDataUserAboutOrg.find(org=> org.idOrg == newSettings.orgId)
         const idRec = currentOrg.idRec
         //находим запись если она есть перезаписываем или создаем новую
         // let selectedOrgSittings = await DataUserAboutOrg.findOne({where: {idRec}})
@@ -230,14 +231,83 @@ class UserService {
     }
 
 
-    async changeWorkStatus(dataForChangeStatus) {
+    // Функция, берет данные о записанных клиентах выбранной орг
+    async getAllEntriesOrg (dataSet) {
+        const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId: dataSet.orgId}})
+        const cleanArrEntries = allEntriesThisOrg.map(en => en.dataValues)
+        const arrDate = []
+
+        const resultFilterOnDate = []   // берем тока даты
+        cleanArrEntries.forEach(el=> {
+            if (!arrDate.includes(el.date)) {
+                const date = el.date
+                const filterOnDate = cleanArrEntries.filter(fi=> fi.date === el.date)
+                resultFilterOnDate.push({date, filterOnDate})
+                arrDate.push(el.date)
+            }
+        })
+        return resultFilterOnDate
+    }
+
+
+    // Функция, которая отфильтрует взятые данные
+    filterReceivedData (entriesOrg) {
+        const resultFilterOnDateAndTime = []     //результат собираем массив дата время кол-во клиентов
+        entriesOrg.forEach(el=> {
+            const arrTime = []
+            const date = el.date
+            el.filterOnDate.forEach(ti=> {
+                if (!arrTime.includes(ti.time)) {
+                    const timeEl = ti.time
+                    const filterOnTime = el.filterOnDate.filter(fi=> fi.time === ti.time)
+
+                    // тут пройти по каждому и если найдем заглушку не включаем ее
+                    const ignoreStub = filterOnTime.filter(st=> st.userId !=='*1')
+                    resultFilterOnDateAndTime.push({date,timeEl, ignoreStub, numCl: ignoreStub.length})
+                    arrTime.push(timeEl)
+                }
+            })
+        })
+        return resultFilterOnDateAndTime
+    }
+
+
+    //функция меняющая workStatus всех записей организации при смене настроек администратором
+    async changeWorkStatusAllEntries(dataSet) {
+        const entriesOrg = await this.getAllEntriesOrg(dataSet)
+        const filterData =  this.filterReceivedData(entriesOrg)
+
+        filterData.forEach(el=>{
+            if (el.ignoreStub[0]) {
+                const dataForChangeStatus = {
+                    state: el.ignoreStub[0].workStatus,
+                    date: el.date,
+                    time: el.timeEl,
+                    idOrg: el.ignoreStub[0].orgId,
+                }
+
+                if (dataSet.maxiPeople > el.numCl && el.ignoreStub[0].workStatus === 'closed' && !el.ignoreStub[0].recBlocked  ||
+                    dataSet.maxiPeople === el.numCl && el.ignoreStub[0].workStatus === 'open' && !el.ignoreStub[0].recBlocked ||
+                    dataSet.maxiPeople < el.numCl && el.ignoreStub[0].workStatus === 'open' && !el.ignoreStub[0].recBlocked
+                ) {
+                    this.changeWorkStatus(dataForChangeStatus)
+                }
+            }
+        })
+    }
+
+
+
+
+    async changeWorkStatus(dataForChangeStatus, btnClicked) {
         const workStatus = dataForChangeStatus.state === 'open' ? 'closed' : 'open';
         const data = {
             date: dataForChangeStatus.date,
             time: dataForChangeStatus.time,
             idOrg: dataForChangeStatus.idOrg
         }
-        await this.changeWorkStatusOrg(workStatus, data)
+        const removalProcess = false;
+        await this.changeWorkStatusOrg(workStatus, data, removalProcess, btnClicked)
         return {workStatus, data}
     }
 
@@ -280,8 +350,9 @@ class UserService {
         refreshFindFieldRemainingFunds.remainingFunds = remainingFunds
         // перезаписываем тока это поле
         await refreshFindFieldRemainingFunds.save({fields: ['remainingFunds']})
-
-        await this.changeWorkStatusOrg(workStatus, newEntry)
+        const removalProcess = false;
+        const btnClicked = false;
+        await this.changeWorkStatusOrg(workStatus, newEntry, removalProcess, btnClicked)
         //на фронте принимаем эти данные и добавляем в иф условие показавать когда открыто
 
         //новая запись в календаре
@@ -293,13 +364,12 @@ class UserService {
 
 
 
-    //Функция меняющая статус работы организации
-    async changeWorkStatusOrg (workStatus, dataEntry) {
-        const deleted = !dataEntry.idOrg   // при удалении idOrg называется orgId  поэтому такая проверка
-        if (!dataEntry.idOrg) {                     //  значит идет процесс удаления
+    //Функция меняющая статус работы организации в определенную дату и время при нажатии кнопки закрыть запись
+    async changeWorkStatusOrg (workStatus, dataEntry, removalProcess, btnClicked) {
+        if (removalProcess) {
             dataEntry.idOrg = dataEntry.orgId
         }
-        const orgId = dataEntry.idOrg
+        const orgId = typeof dataEntry.idOrg === 'number'? JSON.stringify(dataEntry.idOrg) : dataEntry.idOrg
         const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId}})
         const arrEntries = allEntriesThisOrg.map(en => en.dataValues)
         const arrRec = arrEntries
@@ -309,6 +379,16 @@ class UserService {
         if (!arrRec.length || arrRec[0].userId === '*1') {
             await this.createStub(workStatus, dataEntry)
         }
+
+        const getInfoAboutBlockedRecOnTableRec = await TableOfRecords.findAll({where: {date: dataEntry.date}})
+        let recLockHasBeenChanged = getInfoAboutBlockedRecOnTableRec
+            .map(el=> el.dataValues)
+            .find(el => el.time === dataEntry.time)
+            ?.recBlocked
+        if (btnClicked) {
+                recLockHasBeenChanged = !recLockHasBeenChanged
+        }
+
 
         const newArrRec = []
           arrRec.forEach(el=> {
@@ -325,6 +405,7 @@ class UserService {
                 time:el.time,
                 nameUser:el.nameUser,
                 workStatus: el.workStatus,
+                recBlocked: recLockHasBeenChanged,
                 userId: el.userId,
                 remainingFunds: el.remainingFunds,
                 sectionOrOrganization: el.sectionOrOrganization,
@@ -332,10 +413,10 @@ class UserService {
             }
 
             TableOfRecords.destroy({where: {idRec: el.idRec}})
-            if (deleted && el.idRec !== dataEntry.idRec) {  //если идет удаление перезаписываем статусы всех записей кроме удаляемой
+            if (removalProcess && el.idRec !== dataEntry.idRec) {  //если идет удаление перезаписываем статусы всех записей кроме удаляемой
                 TableOfRecords.create(writableField)
             }
-            if (!deleted  && writableField.userId !== '*1') {   //при добавлении просто перезапись workStatus
+            if (!removalProcess  && writableField.userId !== '*1') {   //при добавлении просто перезапись workStatus
                 TableOfRecords.create(writableField)
             }
         })
@@ -399,7 +480,9 @@ class UserService {
 
     async dataAboutDeleteRec(idRec, workStatus) {
         const dataAboutDeletePerson = await TableOfRecords.findOne({where: {idRec}})
-        await this.changeWorkStatusOrg(workStatus, dataAboutDeletePerson.dataValues)
+        const removalProcess = true
+        const btnClicked = false
+        await this.changeWorkStatusOrg(workStatus, dataAboutDeletePerson.dataValues, removalProcess, btnClicked)
         const mailUser = await User.findOne({where: {id: dataAboutDeletePerson.dataValues.userId}})
         dataAboutDeletePerson.dataValues.emailUser = mailUser.email
         return dataAboutDeletePerson

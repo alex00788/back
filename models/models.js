@@ -38,6 +38,7 @@ const TableOfRecords = sequelize.define('tableOfRecords', {
     orgId: {type: DataTypes.STRING, require: true },
     idRec: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     workStatus: {type: DataTypes.STRING, require: true},
+    recBlocked: {type: DataTypes.BOOLEAN, defaultValue: false},
     nameUser: {type: DataTypes.STRING, require: true},
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
 })

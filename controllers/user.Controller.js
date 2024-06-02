@@ -54,7 +54,8 @@ class UserController {
     //функция добавляющая запись о текущей дате
     async changeWorkStatus(req, res, next) {
         try {
-            const data = await user_service.changeWorkStatus(req.body)
+            const btnClicked = true;
+            const data = await user_service.changeWorkStatus(req.body, btnClicked)
             return res.status(200).json({message: `запись ${data.data.date} в ${data.data.time}:00 ${data.workStatus}`, data:data})
         } catch (e) {
             next(e)
