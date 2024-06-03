@@ -25,84 +25,84 @@ class UserService {
 
     async registration(email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds) {
 //если данных нет
-      if (!email || !password) {
-        throw ApiError.badRequest('Некорректный email или password')
-      }
+        if (!email || !password) {
+            throw ApiError.badRequest('Некорректный email или password')
+        }
 // РОЛЬ  присваиваеться  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
-      if (email === "alex-007.88@mail.ru" || phoneNumber === '+79168402927') {
-         this.role = this.mainAdminRole
-      } else {
-         this.role = this.userRole
-      }
+        if (email === "alex-007.88@mail.ru" || phoneNumber === '+79168402927') {
+            this.role = this.mainAdminRole
+        } else {
+            this.role = this.userRole
+        }
 
-      const role = this.role
+        const role = this.role
 //проверка, есть ли такой user
-      const candidate = await User.findOne({where: {email}})
-      if (candidate) {
-        // throw new Error('Пользователь с таким email уже существует')
-        throw ApiError.badRequest('Пользователь с таким email уже существует')
+        const candidate = await User.findOne({where: {email}})
+        if (candidate) {
+            // throw new Error('Пользователь с таким email уже существует')
+            throw ApiError.badRequest('Пользователь с таким email уже существует')
         }
 //хешируем пароль, 2ым параметром указываем сколько раз хешить
-      const hashPassword = await bcrypt.hash(password, 3)
+        const hashPassword = await bcrypt.hash(password, 3)
 //указываем ссылку по которой пользователь будет переходить в аккаунт и подтверждать его!
-      const activationLink = uuid.v4()      //  генерим ссылку  с помощью  uuid.v4()
+        const activationLink = uuid.v4()      //  генерим ссылку  с помощью  uuid.v4()
 //сохраняем пользователя в БД
-      const user = await User.create({
-        email,
-        role,
-        password: hashPassword,
-        nameUser,
-        surnameUser,
-        phoneNumber,
-        sectionOrOrganization,
-        idOrg,
-        activationLink
+        const user = await User.create({
+            email,
+            role,
+            password: hashPassword,
+            nameUser,
+            surnameUser,
+            phoneNumber,
+            sectionOrOrganization,
+            idOrg,
+            activationLink
         })
 
 // отправляем письмо для активации
-      await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`)
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`)
         // await mailService.sendActivationMail(email, `${process.env.API_URL}`)
 
 //  чтоб убрать ненужные поля   и ее будем использовать как payload v token_service v generateJwt
-      const userDtoForSaveToken = new UserDtoForSaveToken(user)
+        const userDtoForSaveToken = new UserDtoForSaveToken(user)
 // также переменная чтоб клиенту вернуть нужные поля тк большое кол-во полей не сохраняет бд
-      const userDto = new UserDto(user)
+        const userDto = new UserDto(user)
 
-      const adminSelectedOrg = await Organization.findOne({where: {managerPhone: phoneNumber}})
-      const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
-      const roleNewUser =  adminSelectedOrg? "ADMIN" : "USER"
-      //удаляем начальные настройки admina но только если его зовут новая...
+        const adminSelectedOrg = await Organization.findOne({where: {managerPhone: phoneNumber}})
+        const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
+        const roleNewUser = adminSelectedOrg ? "ADMIN" : "USER"
+        //удаляем начальные настройки admina но только если его зовут новая...
         if (adminSelectedOrg) {
-          const refreshAdminOrg = await DataUserAboutOrg.findAll( {where:{idOrg: idNewOrg}})
-            const findAdminOrg = refreshAdminOrg.map(el=> el.dataValues)
-            const dataDelEl = findAdminOrg.find(el=> el.roleSelectedOrg === "ADMIN")
+            const refreshAdminOrg = await DataUserAboutOrg.findAll({where: {idOrg: idNewOrg}})
+            const findAdminOrg = refreshAdminOrg.map(el => el.dataValues)
+            const dataDelEl = findAdminOrg.find(el => el.roleSelectedOrg === "ADMIN")
             if (dataDelEl && dataDelEl.nameUser === 'Новая' && dataDelEl.surnameUser === 'Организация' && dataDelEl.userId === '-') {
-              const idRec = dataDelEl.idRec
-              const deleteRec = await DataUserAboutOrg.destroy({where: {idRec}})
-          }
+                const idRec = dataDelEl.idRec
+                const deleteRec = await DataUserAboutOrg.destroy({where: {idRec}})
+            }
         }
 
 //сохраняем данные о выбранной организации
-      const dataUsersAboutOrg = await DataUserAboutOrg.create({
-        nameUser,
-        surnameUser,
-        userId: user.id,
-        idOrg,
-        sectionOrOrganization,
-        roleSelectedOrg: roleNewUser,
-        remainingFunds,
-        timeStartRec: '15',
-        timeLastRec: '16',
-        maxClients: 3,
-        location: 'Задать в настройках',
-        phoneOrg: 'Задать в настройках'
-      })
+        const dataUsersAboutOrg = await DataUserAboutOrg.create({
+            nameUser,
+            surnameUser,
+            userId: user.id,
+            idOrg,
+            sectionOrOrganization,
+            roleSelectedOrg: roleNewUser,
+            remainingFunds,
+            timeStartRec: '15',
+            timeLastRec: '16',
+            maxClients: 3,
+            location: 'Задать в настройках',
+            phoneOrg: 'Задать в настройках'
+        })
 
 // генерим token в token_service в соответствующей функции..
-      const token = token_service.generateJwt({...userDtoForSaveToken}) // инфо о юзере, но без пароля!
+        const token = token_service.generateJwt({...userDtoForSaveToken}) // инфо о юзере, но без пароля!
 //сохраняем токен в бд
-      await token_service.saveToken(userDtoForSaveToken.id, token.refreshToken)
-      return {...token, user: userDto}
+        await token_service.saveToken(userDtoForSaveToken.id, token.refreshToken)
+        return {...token, user: userDto}
     }
 
 
@@ -121,27 +121,26 @@ class UserService {
     }
 
 
-
     //Функция 1 раз в час смотрт в базу данных, чтоб отправить напоминание
     async checkRecordForSendMail() {
-        let interval = setInterval(()=> {
-           const date = moment().format('DD.MM.YYYY')
-           this.getDataForCheck(date)
+        let interval = setInterval(() => {
+            const date = moment().format('DD.MM.YYYY')
+            this.getDataForCheck(date)
         }, 3600000)
     }
 
     //берем записи на сегодняшний день
     async getDataForCheck(date) {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
-        const cleanArr = allEntriesForThisDate.map(el=> el.dataValues)
+        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTim = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
         const currentHour = moment().format('HH')
-        sortTim.forEach(el=> {
-            setTimeout(()=> {                         // если осталось 4 часа до записи
+        sortTim.forEach(el => {
+            setTimeout(() => {                         // если осталось 4 часа до записи
                 if (currentHour === JSON.stringify(+el.time - 4) && el.userId !== '*1') {
                     this.getDataForSendNotification(el)
                 }
-            },2000)
+            }, 2000)
         })
     }
 
@@ -158,7 +157,6 @@ class UserService {
         //разблокировать когда все почты будут настоящими
         // await mailService.sendNotificationAboutRec(dataNotification)
     }
-
 
 
     async newOrg(newOrgData) {
@@ -197,15 +195,13 @@ class UserService {
     }
 
 
-
-
     async setSettings(newSettings) {
         await this.changeWorkStatusAllEntries(newSettings)
         // найти в бд пользователя и перезаписать строку с настройками
         // находим все записи пользователя
         const findOrgInDataUserAboutOrg = await DataUserAboutOrg.findAll({where: {userId: newSettings.userId}})
         //находим текущую организацию
-        const currentOrg = findOrgInDataUserAboutOrg.find(org=> org.idOrg == newSettings.orgId)
+        const currentOrg = findOrgInDataUserAboutOrg.find(org => org.idOrg == newSettings.orgId)
         const idRec = currentOrg.idRec
         //находим запись если она есть перезаписываем или создаем новую
         // let selectedOrgSittings = await DataUserAboutOrg.findOne({where: {idRec}})
@@ -232,16 +228,15 @@ class UserService {
 
 
     // Функция, берет данные о записанных клиентах выбранной орг
-    async getAllEntriesOrg (dataSet) {
+    async getAllEntriesOrg(dataSet) {
         const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId: dataSet.orgId}})
         const cleanArrEntries = allEntriesThisOrg.map(en => en.dataValues)
         const arrDate = []
-
-        const resultFilterOnDate = []   // берем тока даты
-        cleanArrEntries.forEach(el=> {
+        const resultFilterOnDate = []
+        cleanArrEntries.forEach(el => {
             if (!arrDate.includes(el.date)) {
                 const date = el.date
-                const filterOnDate = cleanArrEntries.filter(fi=> fi.date === el.date)
+                const filterOnDate = cleanArrEntries.filter(fi => fi.date === el.date)
                 resultFilterOnDate.push({date, filterOnDate})
                 arrDate.push(el.date)
             }
@@ -251,19 +246,19 @@ class UserService {
 
 
     // Функция, которая отфильтрует взятые данные
-    filterReceivedData (entriesOrg) {
+    filterReceivedData(entriesOrg) {
         const resultFilterOnDateAndTime = []     //результат собираем массив дата время кол-во клиентов
-        entriesOrg.forEach(el=> {
+        entriesOrg.forEach(el => {
             const arrTime = []
             const date = el.date
-            el.filterOnDate.forEach(ti=> {
+            el.filterOnDate.forEach(ti => {
                 if (!arrTime.includes(ti.time)) {
                     const timeEl = ti.time
-                    const filterOnTime = el.filterOnDate.filter(fi=> fi.time === ti.time)
+                    const filterOnTime = el.filterOnDate.filter(fi => fi.time === ti.time)
 
                     // тут пройти по каждому и если найдем заглушку не включаем ее
-                    const ignoreStub = filterOnTime.filter(st=> st.userId !=='*1')
-                    resultFilterOnDateAndTime.push({date,timeEl, ignoreStub, numCl: ignoreStub.length})
+                    const ignoreStub = filterOnTime.filter(st => st.userId !== '*1')
+                    resultFilterOnDateAndTime.push({date, timeEl, ignoreStub, numCl: ignoreStub.length})
                     arrTime.push(timeEl)
                 }
             })
@@ -275,9 +270,9 @@ class UserService {
     //функция меняющая workStatus всех записей организации при смене настроек администратором
     async changeWorkStatusAllEntries(dataSet) {
         const entriesOrg = await this.getAllEntriesOrg(dataSet)
-        const filterData =  this.filterReceivedData(entriesOrg)
+        const filterData = this.filterReceivedData(entriesOrg)
 
-        filterData.forEach(el=>{
+        filterData.forEach(el => {
             if (el.ignoreStub[0]) {
                 const dataForChangeStatus = {
                     state: el.ignoreStub[0].workStatus,
@@ -286,7 +281,7 @@ class UserService {
                     idOrg: el.ignoreStub[0].orgId,
                 }
 
-                if (dataSet.maxiPeople > el.numCl && el.ignoreStub[0].workStatus === 'closed' && !el.ignoreStub[0].recBlocked  ||
+                if (dataSet.maxiPeople > el.numCl && el.ignoreStub[0].workStatus === 'closed' && !el.ignoreStub[0].recBlocked ||
                     dataSet.maxiPeople === el.numCl && el.ignoreStub[0].workStatus === 'open' && !el.ignoreStub[0].recBlocked ||
                     dataSet.maxiPeople < el.numCl && el.ignoreStub[0].workStatus === 'open' && !el.ignoreStub[0].recBlocked
                 ) {
@@ -295,8 +290,6 @@ class UserService {
             }
         })
     }
-
-
 
 
     async changeWorkStatus(dataForChangeStatus, btnClicked) {
@@ -312,6 +305,21 @@ class UserService {
     }
 
 
+    async rewriteValueOneField (newEntry) {
+        const remainingFunds = JSON.stringify(+newEntry.remainingFunds - 1)
+        // переписать значение одного поля
+        // находим все поля текущ пользователя в таблице с данными об организации
+        const refreshRemainingFunds = await DataUserAboutOrg.findAll({where: {userId: newEntry.userId}})
+        //фильтруем по id текущей организации
+        const findFieldRemainingCurUserSelectedOrg = refreshRemainingFunds
+            .find(el => el.idOrg == newEntry.idOrg)
+        //ищем поле текущ user выбранной организации
+        const refreshFindFieldRemainingFunds = await DataUserAboutOrg.findOne({where: findFieldRemainingCurUserSelectedOrg.idRec})
+        //меняем значение
+        refreshFindFieldRemainingFunds.remainingFunds = remainingFunds
+        // перезаписываем тока это поле
+        await refreshFindFieldRemainingFunds.save({fields: ['remainingFunds']})
+    }
 
     async newEntry(newEntry) {
         const date = newEntry.date
@@ -325,38 +333,21 @@ class UserService {
         const strUserId = JSON.stringify(userId)
         const sectionOrOrganization = newEntry.sectionOrOrganization
         const orgId = newEntry.idOrg
-        const workStatus = newEntry.workStatus === 0? 'closed': 'open'
-                                     //проверка записан ли userId на выбранный день  //берем все записи за выбранную дату
-        const allEntriesForTheSelectedDate = await TableOfRecords.findAll({where: {date}})
-                                                                        //Фильтруем по выбранному времени
-        const selectedTime = allEntriesForTheSelectedDate
-            .filter(el=> el.time === time)
-                                                                        //Проверяем есть ли текущий пользователь в это время где то еще?
-        const userAlreadyRecorded = selectedTime.find(el=> el.userId === userId)
+        const workStatus = newEntry.workStatus === 0 ? 'closed' : 'open'
+        const removalProcess = false;
+        const btnClicked = false;
 
+        const userAlreadyRecorded = await this.checkingEntryInAnotherPlace(date, time, userId)
         if (userAlreadyRecorded) {
             return {userAlreadyRecorded: true, alreadyRec: userAlreadyRecorded}
         }
 
-        // переписать значение одного поля
-        // находим все поля текущ пользователя в таблице с данными об организации
-        const refreshRemainingFunds = await DataUserAboutOrg.findAll({where: {userId: newEntry.userId}})
-        //фильтруем по id текущей организации
-        const findFieldRemainingCurUserSelectedOrg =  refreshRemainingFunds
-            .find(el=> el.idOrg == orgId)
-        //ищем поле текущ user выбранной организации
-        const refreshFindFieldRemainingFunds = await DataUserAboutOrg.findOne({where: findFieldRemainingCurUserSelectedOrg.idRec})
-        //меняем значение
-        refreshFindFieldRemainingFunds.remainingFunds = remainingFunds
-        // перезаписываем тока это поле
-        await refreshFindFieldRemainingFunds.save({fields: ['remainingFunds']})
-        const removalProcess = false;
-        const btnClicked = false;
+        await this.rewriteValueOneField(newEntry)
         await this.changeWorkStatusOrg(workStatus, newEntry, removalProcess, btnClicked)
-        //на фронте принимаем эти данные и добавляем в иф условие показавать когда открыто
-
-        //новая запись в календаре
-        const newUserAccount = await TableOfRecords.create({date, dateYear, dateMonth,dateNum, time, nameUser,workStatus, userId, remainingFunds, sectionOrOrganization, orgId})
+        const newUserAccount = await TableOfRecords.create({
+            date, dateYear, dateMonth, dateNum, time, nameUser, workStatus, userId, remainingFunds, sectionOrOrganization, orgId
+        })
+        await this.rmPlug(date, time)
         const mailAdminOrg = await this.getMailAdminOrg(orgId)
         const userData = await TableOfRecords.findAll({where: {date}})
         return {userData, emailAdmin: mailAdminOrg}
@@ -364,40 +355,75 @@ class UserService {
 
 
 
-    //Функция меняющая статус работы организации в определенную дату и время при нажатии кнопки закрыть запись
-    async changeWorkStatusOrg (workStatus, dataEntry, removalProcess, btnClicked) {
-        if (removalProcess) {
-            dataEntry.idOrg = dataEntry.orgId
+    async checkingEntryInAnotherPlace(date, time, userId) {
+        //проверка записан ли userId на выбранный день  //берем все записи за выбранную дату
+        const allEntriesForTheSelectedDate = await TableOfRecords.findAll({where: {date}})
+        //Фильтруем по выбранному времени
+        const selectedTime = allEntriesForTheSelectedDate
+            .filter(el => el.time === time)
+        //Проверяем есть ли текущий пользователь в это время где то еще?
+        return selectedTime.find(el => el.userId === userId)
+    }
+
+
+
+    async rmPlug (date, time) {
+        const userDataWithoutStub = await TableOfRecords.findAll({where: {date}})
+        if (userDataWithoutStub.length > 1) {
+            userDataWithoutStub.forEach(el=> {
+                if (el.dataValues.userId === '*1' && el.dataValues.date === date && el.dataValues.time === time) {
+                    TableOfRecords.destroy({where: {idRec: el.dataValues.idRec}})
+                }
+            })
         }
-        const orgId = typeof dataEntry.idOrg === 'number'? JSON.stringify(dataEntry.idOrg) : dataEntry.idOrg
+    }
+
+
+
+    async filterOrgRecordByTime (orgId, dataEntry) {
         const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId}})
         const arrEntries = allEntriesThisOrg.map(en => en.dataValues)
         const arrRec = arrEntries
             .filter((el)=> el.date === dataEntry.date)
             .filter(el=> el.time === dataEntry.time)
+        return arrRec
+    }
 
-        if (!arrRec.length || arrRec[0].userId === '*1') {
-            await this.createStub(workStatus, dataEntry)
-        }
 
+
+    async checkingBtnIsPressed ( btnClicked, dataEntry) {
         const getInfoAboutBlockedRecOnTableRec = await TableOfRecords.findAll({where: {date: dataEntry.date}})
         let recLockHasBeenChanged = getInfoAboutBlockedRecOnTableRec
             .map(el=> el.dataValues)
             .find(el => el.time === dataEntry.time)
             ?.recBlocked
         if (btnClicked) {
-                recLockHasBeenChanged = !recLockHasBeenChanged
+            recLockHasBeenChanged = !recLockHasBeenChanged
         }
+        return recLockHasBeenChanged
+    }
 
 
+
+    //Функция меняющая статус работы организации в определенную дату и время
+    async changeWorkStatusOrg (workStatus, dataEntry, removalProcess, btnClicked) {
+        if (removalProcess) {
+            dataEntry.idOrg = dataEntry.orgId
+        }
+        const orgId = typeof dataEntry.idOrg === 'number'? JSON.stringify(dataEntry.idOrg) : dataEntry.idOrg
+        const filteredRec = await this.filterOrgRecordByTime(orgId, dataEntry)
+        if (!filteredRec.length || filteredRec[0].userId === '*1') {
+            await this.createStub(workStatus, dataEntry)
+        }
+        const recLockHasBeenChanged = await this.checkingBtnIsPressed(btnClicked, dataEntry)
         const newArrRec = []
-          arrRec.forEach(el=> {
+        filteredRec.forEach(el=> {
             el.workStatus = workStatus;
             newArrRec.push(el)
         })
 
         newArrRec.forEach(el=> {
-            const writableField = {    //данные перезаписываемых полей
+            const writableField = {
                 date: el.date,
                 dateYear:el.dateYear,
                 dateMonth:el.dateMonth,
