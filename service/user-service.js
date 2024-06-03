@@ -568,26 +568,6 @@ class UserService {
 
 
     async getAllEntryAllUsers(dataYear, month, sectionOrOrganization, orgId, userId, roleSelectedOrg, remainingFunds ) {
-        // const findOrgInDataUserAboutOrg = await DataUserAboutOrg.findAll({where: {userId}})
-        // const currentUser = await User.findOne({where: {id: userId}})
-        // const  alreadyRecords = findOrgInDataUserAboutOrg
-        //     .find(el=>el.idOrg === orgId )
-        // if (!alreadyRecords) {
-        //     const dataUsersAboutOrg = await DataUserAboutOrg.create({
-        //         nameUser: currentUser.nameUser,
-        //         surnameUser: currentUser.surnameUser,
-        //         userId,
-        //         idOrg: orgId,
-        //         sectionOrOrganization,
-        //         roleSelectedOrg: 'USER',
-        //         remainingFunds: '0',
-        //         timeStartRec: '17',
-        //         timeLastRec: '18',
-        //         maxClients: 3,
-        //         location: 'getUsers253'
-        //     })
-        // }
-
         const allEntryThisOrg = await TableOfRecords.findAll({where:({orgId})})
         return  allEntryThisOrg.map((el)=> el.dataValues)
             .filter((e)=> e.dateYear === dataYear)
