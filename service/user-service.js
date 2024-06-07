@@ -667,7 +667,7 @@ class UserService {
                     timeStartRec: i.timeStartRec,
                     timeLastRec: i.timeLastRec,
                     recAllowed: i.recAllowed,
-                    created: moment(i.createdAt).format('DD.MM.YYYY'),
+                    created: moment(i.createdAt),
                     maxClients: i.maxClients,
                     location: i.location,
                     phoneOrg: i.phoneOrg
