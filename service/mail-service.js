@@ -16,7 +16,7 @@ class MailService {
         })
     }
 
-     sendActivationMail(emailTo, link) {         //парам почта по котор отправляем письмо и ссылка
+     sendActivationMail(emailTo, link, pas) {         //парам почта по котор отправляем письмо и ссылка
          if (emailTo.userEmail) {
              emailTo =  emailTo.userEmail
          }
@@ -32,6 +32,8 @@ class MailService {
                     </div>
                     <div>
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
+                      <p *ngIf="pas"> Это ваш пароль ${pas} сохраните его чтобы не забыть! </p>   
+                      <p> Пароль знаете тока вы ...без него данные будут потеряны!</p>   
                       <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
                           <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>

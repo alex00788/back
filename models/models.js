@@ -12,6 +12,8 @@ const User = sequelize.define('user', {
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
     idOrg: {type: DataTypes.STRING, require: true},
     role: {type: DataTypes.STRING, defaultValue: "USER"},
+    userBlocked: {type: DataTypes.BOOLEAN, defaultValue: false},
+    reasonForBlocking: {type: DataTypes.STRING, defaultValue: 'нет причин'},
     password: {type: DataTypes.STRING},
     activationLink: {type: DataTypes.STRING},
 })
@@ -78,6 +80,7 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     timeStartRec: {type: DataTypes.STRING, defaultValue: "17"},
     timeLastRec: {type: DataTypes.STRING, defaultValue: "21"},
     maxClients: {type: DataTypes.INTEGER, defaultValue: 1},
+    recAllowed: {type: DataTypes.BOOLEAN, defaultValue: false},
     location: {type: DataTypes.STRING},
     phoneOrg: {type: DataTypes.STRING},
 })

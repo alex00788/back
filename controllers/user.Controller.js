@@ -145,7 +145,7 @@ class UserController {
             const userEmail = req.body.email
             const userResendLink = await user_service.resendLink(userEmail)
             const activationLink = userResendLink.dataValues.activationLink
-            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`)
+            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`, null)
             return res.status(200).json({message: `ссылка отправлена на адрес ${userEmail}`})
         } catch (e) {
             next(e)
@@ -250,6 +250,18 @@ class UserController {
             next(e)
         }
     }
+
+
+    async getPhoneClient (req, res, next) {
+        try {
+            const userId = req.query.userId
+            const phoneCl = await user_service.getPhoneClient(userId)
+            return res.status(200).json(phoneCl)
+        } catch (e) {
+            next(e)
+        }
+    }
+
 
     //функция вернет на фронт всех пользователей текущей организации
     async getAllUsersCurrentOrganization(req, res, next) {

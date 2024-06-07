@@ -60,7 +60,7 @@ class UserService {
         })
 
 // отправляем письмо для активации
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`)
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`, password)
         // await mailService.sendActivationMail(email, `${process.env.API_URL}`)
 
 //  чтоб убрать ненужные поля   и ее будем использовать как payload v token_service v generateJwt
@@ -609,8 +609,15 @@ class UserService {
                 sectionOrOrganization: el.sectionOrOrganization
             }
         })
-
     }
+
+
+
+    async getPhoneClient(userId) {
+        const dataClient = await User.findOne({where: {id: userId}})
+        return dataClient.dataValues.phoneNumber
+    }
+
 
     //функция, которая будет возвращать роли админ, пользователей организации админом которой он являеться
     async getAllUsersOrganization(currentOrgId, currentUserId) {
@@ -659,6 +666,8 @@ class UserService {
                     sectionOrOrganization: i.sectionOrOrganization,
                     timeStartRec: i.timeStartRec,
                     timeLastRec: i.timeLastRec,
+                    recAllowed: i.recAllowed,
+                    created: moment(i.createdAt).format('DD.MM.YYYY'),
                     maxClients: i.maxClients,
                     location: i.location,
                     phoneOrg: i.phoneOrg
