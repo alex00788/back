@@ -76,6 +76,11 @@ class UserController {
                     уже записан(а) ${newEntry.date} в ${newEntry.time}:00  ${data.alreadyRec.dataValues.sectionOrOrganization}`));
             }
 
+            if (data.newClient) {
+                return next(ApiError.badRequest(`Похоже, что вы впервые в этой организации...для дальнейшей записи свяжитесь с администратором...`));
+            }
+
+
             if (!data.emailAdmin) {
                 return next(ApiError.badRequest(`Администратор Организации еще не зарегистрирован`));
             }
@@ -174,6 +179,16 @@ class UserController {
             next(e)
         }
     }
+
+    async changeAllowed(req, res, next) {
+            try {
+                const data = req.body
+                const changeAllowed = await user_service.changeAllowed(data)
+                return res.status(200).json({message: `настройки сохранены`, allowed:changeAllowed})
+            } catch (e) {
+                next(e)
+            }
+        }
 
     //функция, которая берет все записи по указанной дате
     // async getAllEntry(req, res, next) {

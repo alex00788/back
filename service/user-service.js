@@ -336,11 +336,18 @@ class UserService {
         const workStatus = newEntry.workStatus === 0 ? 'closed' : 'open'
         const removalProcess = false;
         const btnClicked = false;
+        const recAllowed = newEntry.recAllowed;
 
         const userAlreadyRecorded = await this.checkingEntryInAnotherPlace(date, time, userId)
         if (userAlreadyRecorded) {
             return {userAlreadyRecorded: true, alreadyRec: userAlreadyRecorded}
         }
+
+        const newClient = moment(newEntry.created).add(7 ,'day') >= moment(); //если дата создания строки неделя то добавляем new в карточку клиента
+        if (remainingFunds < -1 && newClient) {
+            return {newClient: true}
+        }
+
 
         await this.rewriteValueOneField(newEntry)
         await this.changeWorkStatusOrg(workStatus, newEntry, removalProcess, btnClicked)
@@ -540,6 +547,20 @@ class UserService {
                 res.push(el)
             })
         return res
+    }
+
+
+//запрещаем или разрешаем записываться клиенту
+    async changeAllowed(allowedData) {
+        const recAllowed = !allowedData.recAllowed
+        const userId = allowedData.selectedUser.id
+        const idOrg = allowedData.selectedUser.idOrg
+        const getDataForChange = await DataUserAboutOrg.findAll({where: {userId}})
+        const org = getDataForChange.find(el=> el.idOrg === idOrg)
+        const fieldRecAllowed = await DataUserAboutOrg.findOne({where: org.dataValues.idRec})
+        fieldRecAllowed.recAllowed = recAllowed
+        await fieldRecAllowed.save({fields: ['recAllowed']})
+        return recAllowed
     }
 
 

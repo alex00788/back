@@ -31,6 +31,7 @@ router.post('/addNewOrg', userController.addNewOrg)
 router.post('/resendLink', userController.resendLink)
 router.post('/sendInSupport', userController.sendInSupport)
 router.post('/clearTableRec', userController.clearTableRec)
+router.post('/changeAllowed', userController.changeAllowed)
 
 router.post('/changeRole', userController.changeRole)
 // router.get('/getAllEntry', userController.getAllEntry)
