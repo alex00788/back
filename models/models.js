@@ -78,6 +78,7 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     roleSelectedOrg: {type: DataTypes.STRING, require: true, defaultValue: "USER"},
     remainingFunds: {type: DataTypes.STRING, defaultValue: "0"},
     timeStartRec: {type: DataTypes.STRING, defaultValue: "17"},
+    timeMinutesRec: {type: DataTypes.STRING, defaultValue: "00"},
     timeLastRec: {type: DataTypes.STRING, defaultValue: "21"},
     maxClients: {type: DataTypes.INTEGER, defaultValue: 1},
     recAllowed: {type: DataTypes.BOOLEAN, defaultValue: false},
