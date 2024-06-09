@@ -42,6 +42,10 @@ class UserService {
             // throw new Error('Пользователь с таким email уже существует')
             throw ApiError.badRequest('Пользователь с таким email уже существует')
         }
+        const phoneRepeat = await User.findOne({where: {phoneNumber}})
+        if (phoneRepeat) {
+            throw ApiError.badRequest('телефон уже зарегистрирован')
+        }
 //хешируем пароль, 2ым параметром указываем сколько раз хешить
         const hashPassword = await bcrypt.hash(password, 3)
 //указываем ссылку по которой пользователь будет переходить в аккаунт и подтверждать его!
@@ -232,6 +236,7 @@ class UserService {
 
     // Функция, берет данные о записанных клиентах выбранной орг
     async getAllEntriesOrg(dataSet) {
+        dataSet.orgId = typeof dataSet.orgId === "number"? JSON.stringify(dataSet.orgId) : dataSet.orgId
         const allEntriesThisOrg = await TableOfRecords.findAll({where: {orgId: dataSet.orgId}})
         const cleanArrEntries = allEntriesThisOrg.map(en => en.dataValues)
         const arrDate = []
