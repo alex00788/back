@@ -160,7 +160,7 @@ class UserService {
             org: user.sectionOrOrganization
         }
         //разблокировать когда все почты будут настоящими
-        // await mailService.sendNotificationAboutRec(dataNotification)
+        await mailService.sendNotificationAboutRec(dataNotification)
     }
 
 

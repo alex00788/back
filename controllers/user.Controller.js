@@ -92,7 +92,7 @@ class UserController {
             if (userSignedHimself) {
                 //разблокировать когда все почты будут настоящими
                 //тока если пользователь сам записался !!! отправляем письмо Админу
-                // await mailService.notificationOfAnEntry(data.emailAdmin, newEntry.user,newEntry.sectionOrOrganization, newEntry.date, newEntry.time + ': 00')
+                await mailService.notificationOfAnEntry(data.emailAdmin, newEntry.user,newEntry.sectionOrOrganization, newEntry.date, newEntry.time + ': 00')
             }
 
             const userData = data.userData
@@ -322,13 +322,13 @@ class UserController {
             if (userCancelHimselfRec == 1) {
 
                 //разблокировать когда все почты будут настоящими
-                // await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
-                //     dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
+                await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
+                    dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
         //иначе если админ удалил клиента то письмо клиенту об отмене
             } else {
                 //разблокировать когда все почты будут настоящими
-                // await mailService.adminCanceledRecording(emailUser, dataAboutDeleteRec.nameUser,
-                //     dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
+                await mailService.adminCanceledRecording(emailUser, dataAboutDeleteRec.nameUser,
+                    dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
             }
 
             return res.status(200).json({message: `удалена запись с id = ${deleteUserId}`})
