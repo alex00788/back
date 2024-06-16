@@ -355,6 +355,9 @@ class UserService {
         if (remainingFunds < -1 && newClient) {
             return {newClient: true}
         }
+        if (!newClient && remainingFunds < 0) {
+            return {balance:'off'}
+        }
 
 
         await this.rewriteValueOneField(newEntry)
@@ -571,6 +574,16 @@ class UserService {
         return recAllowed
     }
 
+// добавляем абонемент в таблицу dataAboutOrg
+    async addSubscription(data) {
+        const getDataForChange = await DataUserAboutOrg.findOne({where:  data.idRec})
+        getDataForChange.remainingFunds = JSON.stringify(data.remainingFunds)
+        await getDataForChange.save({fields: ['remainingFunds']})
+        return getDataForChange
+    }
+
+
+
 
     //переносит данные из таблици записей в таблицу архив
     async clearTableRec(date) {
@@ -689,6 +702,7 @@ class UserService {
                 return{
                     id: i.userId,
                     idOrg: i.idOrg,
+                    idRec: i.idRec,
                     nameUser: i.nameUser,
                     surnameUser: i.surnameUser,
                     remainingFunds: i.remainingFunds,

@@ -80,6 +80,10 @@ class UserController {
                 return next(ApiError.badRequest(`Похоже, что вы впервые в этой организации...для дальнейшей записи свяжитесь с администратором...`));
             }
 
+            if (data.balance === 'off') {
+                return next(ApiError.badRequest(`Пожалуйста, пополните баланс`));
+            }
+
 
             if (!data.emailAdmin) {
                 return next(ApiError.badRequest(`Администратор Организации еще не зарегистрирован`));
@@ -185,6 +189,16 @@ class UserController {
                 const data = req.body
                 const changeAllowed = await user_service.changeAllowed(data)
                 return res.status(200).json({message: `настройки сохранены`, allowed:changeAllowed})
+            } catch (e) {
+                next(e)
+            }
+        }
+
+        async addSubscription(req, res, next) {
+            try {
+                const data = req.body
+                const changeRemain = await user_service.addSubscription(data)
+                return res.status(200).json({message: `абонемент добавлен`, changeRemain})
             } catch (e) {
                 next(e)
             }
