@@ -315,18 +315,17 @@ class UserController {
             const workStatus = req.params.workStatus === 0? 'closed' : 'open'
         //выносим логику в сервис
             const dataAboutDeleteRec = await user_service.dataAboutDeleteRec(deleteEntryId, workStatus)
-            const emailUser = dataAboutDeleteRec.userEmail
+            const emailUser = dataAboutDeleteRec.dataValues.emailUser
             const deleteUserId = await user_service.deleteEntry(deleteEntryId, restoreBalance, orgId)
             const mailAdmin = await user_service.getMailAdminOrg(orgId)
         //если пользователь сам отменил запись...отправим письмо админу что отписался...
-            if (userCancelHimselfRec == 1) {
-
+            if (userCancelHimselfRec == 1) {           // тут при отмене записи клиентом сообщаем админу об отмене
                 //разблокировать когда все почты будут настоящими
                 await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
                     dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
         //иначе если админ удалил клиента то письмо клиенту об отмене
             } else {
-                //разблокировать когда все почты будут настоящими
+                //разблокировать когда все почты будут настоящими  // тут при отмене записи админом сообщаем пользователю об отмене
                 await mailService.adminCanceledRecording(emailUser, dataAboutDeleteRec.nameUser,
                     dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
             }

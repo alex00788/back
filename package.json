@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": "20.13.1",
+    "npm": "10.8.0"
+  },
   "scripts": {
     "start": "node index",
     "server": "nodemon index.js",
     "client-install": "npm install --prefix client",
     "client": "npm run start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "postbuild": "npm run client-install && npm run build --prefix client"
   },
   "keywords": [],
   "author": "",
