@@ -28,7 +28,7 @@ app.use('/api', router)
     app.get('*', (req, res)=> {
         res.sendFile(
             path.resolve(
-                __dirname, 'client', 'dist', 'client', 'index.html'
+                __dirname, 'client', 'dist', 'client', 'browser', 'index.html'
             )
         )
     })
