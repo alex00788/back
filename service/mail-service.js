@@ -32,11 +32,15 @@ class MailService {
                     </div>
                     <div>
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
-                      <p *ngIf="pas"> Это ваш пароль ${pas} сохраните его чтобы не забыть! </p>   
+                      <p *ngIf="pas"> 
+                            <strong> Это ваш пароль: </strong>
+                            <span style="color: #2630f1">${pas}</span>
+                             сохраните его чтобы не забыть! 
+                      </p>   
                       <p> Пароль знаете тока вы ...без него данные будут потеряны!</p>   
                       <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                       </p>   
                     </div>`
@@ -72,7 +76,7 @@ class MailService {
                     
                         <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                         </p>  
                     </div>`
@@ -97,7 +101,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>`
             },
@@ -121,7 +125,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>`
             },
@@ -149,7 +153,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
@@ -171,7 +175,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
@@ -197,7 +201,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63422"> ЗаписьКпрофи.рф </a>
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
