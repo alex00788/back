@@ -28,7 +28,14 @@ class MailService {
                 html:
                     `<div>
                         <h1>Здравствуйте! </h1>
-                        <h3>Для завершения активации нажмите: <a style="border solid 1px red; padding: 10px" href="${link}">подтвердить Email</a></h3>
+                        <h3>Для завершения активации нажмите: 
+                        <br>
+                        <br>
+                            <a style="border: solid 1px red; padding: 10px; margin: 20px 0; border-radius: 10px" href="${link}">
+                                подтвердить Email
+                            </a>
+                        </h3>
+                        <br>
                     </div>
                     <div>
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
@@ -37,7 +44,10 @@ class MailService {
                             <span style="color: #2630f1">${pas}</span>
                              сохраните его чтобы не забыть! 
                       </p>   
-                      <p> Пароль знаете тока вы ...без него данные будут потеряны!</p>   
+                      <strong style="text-decoration: underline"> 
+                        Пароль знаете тока вы! 
+                      </strong> 
+                      ...без него данные будут потеряны!  
                       <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
                           <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>

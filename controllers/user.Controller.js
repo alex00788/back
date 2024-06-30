@@ -152,9 +152,10 @@ class UserController {
     async resendLink(req, res, next) {
         try {
             const userEmail = req.body.email
+            const password = req.body.password
             const userResendLink = await user_service.resendLink(userEmail)
             const activationLink = userResendLink.dataValues.activationLink
-            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`, null)
+            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`, req.body.password)
             return res.status(200).json({message: `ссылка отправлена на адрес ${userEmail}`})
         } catch (e) {
             next(e)
