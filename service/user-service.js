@@ -126,7 +126,7 @@ class UserService {
     }
 
 
-    //Функция 1 раз в час смотрт в базу данных, чтоб отправить напоминание
+    //Функция 1 раз в час смотрит в базу данных, чтоб отправить напоминание
     async checkRecordForSendMail() {
         let interval = setInterval(() => {
             const date = moment().format('DD.MM.YYYY')
@@ -139,10 +139,14 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTim = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().format('HH')
+        const currentHour = moment().add(1,'day').format('HH')
         sortTim.forEach(el => {
-            setTimeout(() => {                         // если осталось 4 часа до записи
-                if (currentHour === JSON.stringify(+el.time - 4) && el.userId !== '*1') {
+            setTimeout(() => {                         // если осталось 12 6 2 часа до записи
+                if (
+                    currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1' ||
+                    currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1'  ||
+                    currentHour === JSON.stringify(+el.time - 2) && el.userId !== '*1'
+                ) {
                     this.getDataForSendNotification(el)
                 }
             }, 2000)
@@ -227,6 +231,7 @@ class UserService {
             location: newSettings.location,
             phoneOrg: newSettings.phoneOrg,
         }
+        console.log('231!!!!!!!!!!!!!!dddddddddddddddddd', idRec)
         await DataUserAboutOrg.destroy({where: {idRec}})
         //перезапишем строку в бд
         const saveSit = await DataUserAboutOrg.create(newSit)
