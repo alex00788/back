@@ -81,6 +81,7 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     timeMinutesRec: {type: DataTypes.STRING, defaultValue: "00"},
     timeLastRec: {type: DataTypes.STRING, defaultValue: "21"},
     maxClients: {type: DataTypes.INTEGER, defaultValue: 1},
+    timeUntilBlock: {type: DataTypes.INTEGER, defaultValue: 12},
     recAllowed: {type: DataTypes.BOOLEAN, defaultValue: false},
     location: {type: DataTypes.STRING},
     phoneOrg: {type: DataTypes.STRING},

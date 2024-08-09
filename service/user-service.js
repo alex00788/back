@@ -228,6 +228,7 @@ class UserService {
             timeMinutesRec: newSettings.timeMinutesRec,
             timeLastRec: newSettings.timeFinishRec,
             maxClients: newSettings.maxiPeople,
+            timeUntilBlock: newSettings.timeUntilBlock,
             location: newSettings.location,
             phoneOrg: newSettings.phoneOrg,
         }
