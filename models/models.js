@@ -61,10 +61,14 @@ const ArchiveRecords = sequelize.define('ArchiveRecords', {
 
 
 const Organization = sequelize.define('organization', {
-    nameOrg: {type: DataTypes.STRING, require: true},
     idOrg: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    nameOrg: {type: DataTypes.STRING, require: true},
     supervisorName: {type: DataTypes.STRING, require: true},
     managerPhone: {type: DataTypes.STRING, require: true},
+    email: {type: DataTypes.STRING},
+    userId: {type: DataTypes.STRING, require: true, defaultValue: "USER"},
+    orgLink: {type: DataTypes.STRING, defaultValue: null},
+    linkActive: {type: DataTypes.BOOLEAN, defaultValue: false},  //нужны чтоб кликая по организации переходить на их сайт или рекламную страницу 2500 мес
 })
 
 

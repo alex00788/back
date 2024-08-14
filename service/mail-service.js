@@ -77,12 +77,14 @@ class MailService {
                 text: JSON.stringify(newOrg),
                 html:
                     `<div>
-                        <h1>данные новой организации: </h1>
+                        <h1>Данные новой организации: </h1>
                         <p>организация</p>
                         ${newOrg.nameSectionOrOrganization}
-                        <p>тел</p>
+                        <p>Email</p>
+                        ${newOrg.email}
+                        <p>Тел</p>
                         ${newOrg.phoneNumber}
-                        <p>руководитель</p>
+                        <p>Руководитель</p>
                         ${newOrg.nameSupervisor}
                     
                         <p> С уважением, команда 
@@ -217,6 +219,30 @@ class MailService {
                     </p>  `
             },
         )
+    }
+
+
+    sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg) {  // оповещение пользователю о том что организация добавлена
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: emailNewOrg,
+                subject: `Организация ${nameOrg} успешно добавлена`,
+                text: 'textNull',
+                html:
+                    `<div>
+                        <p> Организация ${nameOrg} успешно добавлена </p>
+                        <p> Если вы этого не делали,</p>
+                        <p> Просто проигнорируйте это письмо</p>
+                        <p> Созданно автоматически отвечать не нужно...</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
+            },
+        )
+
     }
 
 

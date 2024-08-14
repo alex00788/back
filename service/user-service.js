@@ -72,7 +72,7 @@ class UserService {
 // также переменная чтоб клиенту вернуть нужные поля тк большое кол-во полей не сохраняет бд
         const userDto = new UserDto(user)
 
-        const adminSelectedOrg = await Organization.findOne({where: {managerPhone: phoneNumber}})
+        const adminSelectedOrg = await Organization.findOne({where: {email}})
         const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
         const roleNewUser = adminSelectedOrg ? "ADMIN" : "USER"
         //удаляем начальные настройки admina но только если его зовут новая...
@@ -99,6 +99,7 @@ class UserService {
             timeMinutesRec: '00',
             timeLastRec: '16',
             maxClients: 3,
+            timeUntilBlock: '12',
             location: 'Задать в настройках',
             phoneOrg: 'Задать в настройках'
         })
@@ -172,6 +173,7 @@ class UserService {
         const nameOrg = newOrgData.nameOrg
         const supervisorName = newOrgData.supervisorName
         const managerPhone = newOrgData.managerPhone
+        const email = newOrgData.email
         const checkAvailability = await Organization.findOne({where: {nameOrg}})
         const checkPhoneSupervisor = await Organization.findOne({where: {managerPhone}})
         if (checkAvailability) {
@@ -180,11 +182,11 @@ class UserService {
         // if (checkPhoneSupervisor) {   //проверка на то чтоб тел был уникален  пока закоментил
         //     return 'duplicatePhone'
         // }
-        const newOrganization = await Organization.create({nameOrg, supervisorName, managerPhone})
+        const newOrganization = await Organization.create({nameOrg, supervisorName, managerPhone, email})
         const idOrg = await Organization.findOne({where: {nameOrg}})
 
         // У каждой орг должен быть свой админ иначе будет ошибка...
-        //создаю админские настройки в таблице данных о новой орг и как тока пользователь с телефоном из табл организац зарегистрируеться, их удалю
+        //создаю админские настройки в таблице данных о новой орг и как тока пользователь с email из табл организац зарегистрируеться, их удалю
         const adminSettingsNewOrg = await DataUserAboutOrg.create({
             nameUser: 'Новая',
             surnameUser: 'Организация',
@@ -197,6 +199,7 @@ class UserService {
             timeMinutesRec: '00',
             timeLastRec: '11',
             maxClients: '3',
+            timeUntilBlock: '12',
             location: 'Задать в настройках',
             phoneOrg: 'Задать в настройках',
         })

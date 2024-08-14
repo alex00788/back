@@ -130,6 +130,10 @@ class UserController {
             // if (newOrgData === 'duplicatePhone') {
             //     return next(ApiError.badRequest(`Телефон  ${newOrganization.managerPhone} уже добавлен`));
             // }
+
+            //отправит письмо владельцу орг о том что орг добавлена
+            await mailService.sendNotificationAboutSuccessfulAddNewOrg(newOrganization.email, newOrganization.nameOrg)
+
             return res.status(200).json({message: `организация ${newOrgData.nameOrg} добавлена и сохранена в бд`, newOrgData})
         } catch (e) {
             next(e)
@@ -142,7 +146,7 @@ class UserController {
             const addNewOrg = req.body
             const email = process.env.EMAIL_MY
             await mailService.sendNewOrg(email, addNewOrg)
-            return res.status(200).json({message: `организация ${addNewOrg.nameSectionOrOrganization} будет доступна в течении 5-10 минут`})
+            return res.status(200).json({message: `организация ${addNewOrg.nameSectionOrOrganization} будет доступна в течении 5-10 минут, вам придет сообщение на почту.`})
         } catch (e) {
             next(e)
         }
