@@ -12,6 +12,7 @@ const User = sequelize.define('user', {
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
     idOrg: {type: DataTypes.STRING, require: true},
     role: {type: DataTypes.STRING, defaultValue: "USER"},
+    tariff: {type: DataTypes.STRING, defaultValue: "FREE"},    // В ЗАВИСИМОСТИ от тарифа добавляем платные услуги
     userBlocked: {type: DataTypes.BOOLEAN, defaultValue: false},
     reasonForBlocking: {type: DataTypes.STRING, defaultValue: 'нет причин'},
     password: {type: DataTypes.STRING},

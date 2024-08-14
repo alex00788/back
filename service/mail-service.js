@@ -51,7 +51,7 @@ class MailService {
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо... </p>   
                       <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                       </p>   
                     </div>`
@@ -89,7 +89,7 @@ class MailService {
                     
                         <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                         </p>  
                     </div>`
@@ -114,7 +114,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>`
             },
@@ -138,7 +138,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                         <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>`
             },
@@ -166,7 +166,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
@@ -188,7 +188,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                         <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
@@ -214,7 +214,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
@@ -237,7 +237,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href="http://62.76.90.163:63420"> ЗаписьКпрофи.рф </a>
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
                         </strong>
                     </p>  `
             },
