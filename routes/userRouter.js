@@ -33,8 +33,9 @@ router.post('/sendInSupport', userController.sendInSupport)
 router.post('/clearTableRec', userController.clearTableRec)
 router.post('/changeAllowed', userController.changeAllowed)
 router.post('/addSubscription', userController.addSubscription)
-
 router.post('/changeRole', userController.changeRole)
+router.put('/renameUser', userController.renameUser)
+
 // router.get('/getAllEntry', userController.getAllEntry)
 router.get('/getAllEntryAllUsers', userController.getAllEntryAllUsers)
 router.get('/getAllEntryCurrentUser', userController.getAllEntryCurrentUser)

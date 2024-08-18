@@ -609,6 +609,8 @@ class UserService {
                 idRec: el.idRec,
                 userId: el.userId,
                 nameUser: el.nameUser,
+                workStatus: el.workStatus,
+                recBlocked: el.recBlocked,
                 sectionOrOrganization: el.sectionOrOrganization,
                 orgId: el.orgId,
             })
@@ -817,6 +819,54 @@ class UserService {
         await requiredField.save({fields: ['roleSelectedOrg']})                                  //сохраняем ее в бд
         const userDtoRole = new UserDtoRole(requiredField)                                   //возвращаем нужные поля
         return userDtoRole;
+    }
+
+
+    async renameAllRecTableOfRecords (userId, newName, newSurname, idRec) {
+        const ownRowTableOfRecords = await TableOfRecords.findOne({where: {idRec}})
+        ownRowTableOfRecords.nameUser = newSurname + ' ' + newName
+        ownRowTableOfRecords.save({fields: ['nameUser']})
+    }
+
+    async renameAllArchiveRecordsTab (userId, newName, newSurname, idRec) {
+        const ownRowArchiveRecords = await TableOfRecords.findOne({where: {idRec}})
+        ownRowArchiveRecords.nameUser = newSurname + ' ' + newName
+        ownRowArchiveRecords.save({fields: ['nameUser']})
+    }
+
+    async rename(userId, newName, newSurname) {
+        const user = await User.findOne({where: {id:userId}})
+        if (user.email === 'alex-007.88@mail.ru') {
+            return 'Действие Невыполнимо!!!';
+        }
+        user.nameUser = newName
+        await user.save({fields: ['nameUser']})
+        user.surnameUser = newSurname
+        await user.save({fields: ['surnameUser']})
+
+        const dataUser = await DataUserAboutOrg.findOne({where: {userId}})
+        dataUser.nameUser = newName
+        await dataUser.save({fields: ['nameUser']})
+        dataUser.surnameUser = newSurname
+        await dataUser.save({fields: ['surnameUser']})
+
+        // пкрезаписываем по очереди вси записи таблици записей в календаре
+        const dataTableOfRecords = await TableOfRecords.findAll({where: {userId}})
+        const resForRecordsTab = []
+        dataTableOfRecords.forEach(el=> resForRecordsTab.push(el.dataValues))
+        resForRecordsTab.forEach((el) => {
+             this.renameAllRecTableOfRecords(userId, newName, newSurname, el.idRec)
+        })
+
+        // пкрезаписываем по очереди вси записи таблици Архив
+        const dataArchiveRecords = await ArchiveRecords.findAll({where: {userId}})
+        const resForArchiveRecordsTab = []
+        dataArchiveRecords.forEach(el=> resForArchiveRecordsTab.push(el.dataValues))
+        resForArchiveRecordsTab.forEach((el) => {
+            this.renameAllArchiveRecordsTab(userId, newName, newSurname, el.idRec)
+        })
+
+        return 'Имя успешно изменено на'
     }
 
 

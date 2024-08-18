@@ -53,11 +53,13 @@ const ArchiveRecords = sequelize.define('ArchiveRecords', {
     dateMonth: {type: DataTypes.STRING, require: true },
     dateNum: {type: DataTypes.STRING, require: true },
     time: {type: DataTypes.STRING, require: true},
-    idRec: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     userId: {type: DataTypes.STRING, require: true },
+    orgId: {type: DataTypes.STRING, require: true },
+    idRec: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    workStatus: {type: DataTypes.STRING, require: true},
+    recBlocked: {type: DataTypes.BOOLEAN, defaultValue: false},
     nameUser: {type: DataTypes.STRING, require: true},
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
-    orgId: {type: DataTypes.STRING, require: true },
 })
 
 

@@ -37,6 +37,21 @@ class UserController {
     }
 
 
+    //Функция меняющая имя и фамилию во всех таблицах бд по id
+    async renameUser(req, res, next) {
+        try {
+            const userId = req.body.userId
+            const newName = req.body.newName
+            const newSurname = req.body.newSurname
+            //выносим логику в сервис
+            const renamingProcess = await user_service.rename(userId, newName, newSurname)
+            return res.status(200).json({message: `${renamingProcess} ${newName} ${newSurname}`})
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
     //Функция меняющая роль пользователя в бд
     async changeRole(req, res, next) {
         try {
