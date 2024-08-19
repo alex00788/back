@@ -186,23 +186,45 @@ class UserService {
         const idOrg = await Organization.findOne({where: {nameOrg}})
 
         // У каждой орг должен быть свой админ иначе будет ошибка...
-        //создаю админские настройки в таблице данных о новой орг и как тока пользователь с email из табл организац зарегистрируеться, их удалю
-        const adminSettingsNewOrg = await DataUserAboutOrg.create({
-            nameUser: 'Новая',
-            surnameUser: 'Организация',
-            userId: '-',
-            idOrg: idOrg.dataValues.idOrg,
-            sectionOrOrganization: nameOrg,
-            roleSelectedOrg: "ADMIN",
-            remainingFunds: '-',
-            timeStartRecord: '12',
-            timeMinutesRec: '00',
-            timeLastRec: '11',
-            maxClients: '3',
-            timeUntilBlock: '12',
-            location: 'Задать в настройках',
-            phoneOrg: 'Задать в настройках',
-        })
+        // если пользователь зарегистрировался раньше в другой организации
+        // смотрю есть ли email в таблице users если есть создаю в таблице DataUserAboutOrg с этими данными
+        const userAlreadyRegInUserTable = await User.findOne({where: {email}})
+        if (userAlreadyRegInUserTable) {
+            const adminSettingsNewOrg = await DataUserAboutOrg.create({
+                nameUser: userAlreadyRegInUserTable.nameUser,
+                surnameUser: userAlreadyRegInUserTable.surnameUser,
+                userId: userAlreadyRegInUserTable.id,
+                idOrg: idOrg.dataValues.idOrg,
+                sectionOrOrganization: nameOrg,
+                roleSelectedOrg: "ADMIN",
+                remainingFunds: '-',
+                timeStartRecord: '12',
+                timeMinutesRec: '00',
+                timeLastRec: '11',
+                maxClients: '3',
+                timeUntilBlock: '12',
+                location: 'Задать в настройках',
+                phoneOrg: 'Задать в настройках',
+            })
+        } else {
+            //создаю админские настройки в таблице данных о новой орг и как тока пользователь с email из табл организац зарегистрируеться, их удалю
+            const adminSettingsNewOrg = await DataUserAboutOrg.create({
+                nameUser: 'Новая',
+                surnameUser: 'Организация',
+                userId: '-',
+                idOrg: idOrg.dataValues.idOrg,
+                sectionOrOrganization: nameOrg,
+                roleSelectedOrg: "ADMIN",
+                remainingFunds: '-',
+                timeStartRecord: '12',
+                timeMinutesRec: '00',
+                timeLastRec: '11',
+                maxClients: '3',
+                timeUntilBlock: '12',
+                location: 'Задать в настройках',
+                phoneOrg: 'Задать в настройках',
+            })
+        }
 
         return newOrganization
     }
