@@ -822,6 +822,14 @@ class UserService {
     }
 
 
+    async renameAllRecDataUserAboutOrg (userId, newName, newSurname, idRec) {
+        const ownRowTableDataUserAboutOrg = await DataUserAboutOrg.findOne({where: {idRec}})
+        ownRowTableDataUserAboutOrg.nameUser = newName
+        ownRowTableDataUserAboutOrg.save({fields: ['nameUser']})
+        ownRowTableDataUserAboutOrg.surnameUser = newSurname
+        ownRowTableDataUserAboutOrg.save({fields: ['surnameUser']})
+    }
+
     async renameAllRecTableOfRecords (userId, newName, newSurname, idRec) {
         const ownRowTableOfRecords = await TableOfRecords.findOne({where: {idRec}})
         ownRowTableOfRecords.nameUser = newSurname + ' ' + newName
@@ -844,13 +852,15 @@ class UserService {
         user.surnameUser = newSurname
         await user.save({fields: ['surnameUser']})
 
-        const dataUser = await DataUserAboutOrg.findOne({where: {userId}})
-        dataUser.nameUser = newName
-        await dataUser.save({fields: ['nameUser']})
-        dataUser.surnameUser = newSurname
-        await dataUser.save({fields: ['surnameUser']})
+        // перезаписываем по очереди вси записи таблицы DataUserAboutOrg
+        const dataUser = await DataUserAboutOrg.findAll({where: {userId}})
+        const resForDataUserAboutOrg = []
+        dataUser.forEach(el=> resForDataUserAboutOrg.push(el.dataValues))
+        resForDataUserAboutOrg.forEach((el) => {
+            this.renameAllRecDataUserAboutOrg(userId, newName, newSurname, el.idRec)
+        })
 
-        // пкрезаписываем по очереди вси записи таблици записей в календаре
+        // перезаписываем по очереди вси записи таблицы записей в календаре
         const dataTableOfRecords = await TableOfRecords.findAll({where: {userId}})
         const resForRecordsTab = []
         dataTableOfRecords.forEach(el=> resForRecordsTab.push(el.dataValues))
@@ -858,7 +868,7 @@ class UserService {
              this.renameAllRecTableOfRecords(userId, newName, newSurname, el.idRec)
         })
 
-        // пкрезаписываем по очереди вси записи таблици Архив
+        // перезаписываем по очереди вси записи таблицы Архив
         const dataArchiveRecords = await ArchiveRecords.findAll({where: {userId}})
         const resForArchiveRecordsTab = []
         dataArchiveRecords.forEach(el=> resForArchiveRecordsTab.push(el.dataValues))
