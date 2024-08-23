@@ -37,6 +37,19 @@ class UserController {
     }
 
 
+    //Функция меняющая названия организации во всех таблицах бд по id
+    async renameOrg(req, res, next) {
+        try {
+            const orgId = req.body.orgId
+            const newNameOrg = req.body.newNameOrg
+            //выносим логику в сервис
+            const renamingProcess = await user_service.renameOrg(orgId, newNameOrg)
+            return res.status(200).json({newNameOrg})
+        } catch (e) {
+            next(e)
+        }
+    }
+
     //Функция меняющая имя и фамилию во всех таблицах бд по id
     async renameUser(req, res, next) {
         try {

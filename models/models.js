@@ -69,7 +69,7 @@ const Organization = sequelize.define('organization', {
     supervisorName: {type: DataTypes.STRING, require: true},
     managerPhone: {type: DataTypes.STRING, require: true},
     email: {type: DataTypes.STRING},
-    userId: {type: DataTypes.STRING, require: true, defaultValue: "USER"},
+    userId: {type: DataTypes.STRING, require: true, defaultValue: "USER"},   //добавляется в 2-х случаях при регистрац пользоват и при добавлении организации
     orgLink: {type: DataTypes.STRING, defaultValue: null},
     linkActive: {type: DataTypes.BOOLEAN, defaultValue: false},  //нужны чтоб кликая по организации переходить на их сайт или рекламную страницу 2500 мес
 })

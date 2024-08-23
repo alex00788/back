@@ -73,6 +73,13 @@ class UserService {
         const userDto = new UserDto(user)
 
         const adminSelectedOrg = await Organization.findOne({where: {email}})
+
+       //добавляем id в таблицу организации
+        if (adminSelectedOrg) {
+            adminSelectedOrg.userId = userDto.id
+            adminSelectedOrg.save({fields: ['userId']})
+        }
+
         const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
         const roleNewUser = adminSelectedOrg ? "ADMIN" : "USER"
         //удаляем начальные настройки admina но только если его зовут новая...
@@ -182,13 +189,19 @@ class UserService {
         // if (checkPhoneSupervisor) {   //проверка на то чтоб тел был уникален  пока закоментил
         //     return 'duplicatePhone'
         // }
-        const newOrganization = await Organization.create({nameOrg, supervisorName, managerPhone, email})
-        const idOrg = await Organization.findOne({where: {nameOrg}})
 
         // У каждой орг должен быть свой админ иначе будет ошибка...
         // если пользователь зарегистрировался раньше в другой организации
         // смотрю есть ли email в таблице users если есть создаю в таблице DataUserAboutOrg с этими данными
+        // при этом удаляю строку где это пользоват user
+        // см сторки 83-93  тоже сюда прикрутить если нужно const removeUserAsUser = await DataUserAboutOrg.findAll({where: {userId}})
         const userAlreadyRegInUserTable = await User.findOne({where: {email}})
+        const userId = userAlreadyRegInUserTable? userAlreadyRegInUserTable.id : null;
+
+        const newOrganization = await Organization.create({nameOrg, supervisorName, managerPhone, email, userId})
+        const idOrg = await Organization.findOne({where: {nameOrg}})
+
+
         if (userAlreadyRegInUserTable) {
             const adminSettingsNewOrg = await DataUserAboutOrg.create({
                 nameUser: userAlreadyRegInUserTable.nameUser,
@@ -902,6 +915,80 @@ class UserService {
     }
 
 
+
+
+//User
+    async renameAllFieldsUserTable(newNameOrg, id) {
+        const ownRowTable = await User.findOne({where: {id}})
+        ownRowTable.sectionOrOrganization = newNameOrg
+        ownRowTable.save({fields: ['sectionOrOrganization']})
+    }
+
+//DataUserAboutOrg
+    async renameAllFieldsDataUserAboutOrgTable(newNameOrg, idRec) {
+        const ownRowTable = await DataUserAboutOrg.findOne({where: {idRec}})
+        ownRowTable.sectionOrOrganization = newNameOrg
+        ownRowTable.save({fields: ['sectionOrOrganization']})
+    }
+
+//TableOfRecords
+    async renameAllFieldsTableOfRecords(newNameOrg, idRec) {
+        const ownRowTable = await TableOfRecords.findOne({where: {idRec}})
+        ownRowTable.sectionOrOrganization = newNameOrg
+        ownRowTable.save({fields: ['sectionOrOrganization']})
+    }
+
+//ArchiveRecordsTable
+    async renameAllFieldsArchiveRecordsTable(newNameOrg, idRec) {
+        const ownRowTable = await ArchiveRecords.findOne({where: {idRec}})
+        ownRowTable.sectionOrOrganization = newNameOrg
+        ownRowTable.save({fields: ['sectionOrOrganization']})
+    }
+
+
+
+
+    async renameOrg(orgId, newNameOrg) {
+    // перезаписываем название организации в таблице Organization
+        const organizationTable = await Organization.findOne({where: {idOrg: orgId}})
+        organizationTable.nameOrg = newNameOrg
+        await organizationTable.save({fields: ['nameOrg']})
+
+    // перезаписываем по очереди вси записи таблицы User
+        if (typeof orgId === 'number') {
+            orgId = JSON.stringify(orgId);
+        }
+        const userTable = await User.findAll({where: {idOrg: orgId}})
+        const resForUserTable = []
+        userTable.forEach(el=> resForUserTable.push(el.dataValues))
+        resForUserTable.forEach((el) => {
+            this.renameAllFieldsUserTable(newNameOrg, el.id)
+        })
+
+    // перезаписываем по очереди вси записи таблицы DataUserAboutOrg
+        const dataTable = await DataUserAboutOrg.findAll({where: {idOrg:orgId}})
+        const resForDataTable = []
+        dataTable.forEach(el=> resForDataTable.push(el.dataValues))
+        resForDataTable.forEach((el) => {
+            this.renameAllFieldsDataUserAboutOrgTable(newNameOrg, el.idRec)
+        })
+
+    // перезаписываем по очереди вси записи таблицы TableOfRecords
+        const tabOfRecords = await TableOfRecords.findAll({where: {orgId}})
+        const resForTableOfRecords = []
+        tabOfRecords.forEach(el=> resForTableOfRecords.push(el.dataValues))
+        resForTableOfRecords.forEach((el) => {
+            this.renameAllFieldsTableOfRecords(newNameOrg, el.idRec)
+        })
+
+    // перезаписываем по очереди вси записи таблицы ArchiveRecords
+        const archiveRecordsTable = await ArchiveRecords.findAll({where: {orgId}})
+        const resForArchiveRecords = []
+        archiveRecordsTable.forEach(el=> resForArchiveRecords.push(el.dataValues))
+        resForArchiveRecords.forEach((el) => {
+            this.renameAllFieldsArchiveRecordsTable(newNameOrg, el.idRec)
+        })
+       }
 }
 
 module.exports = new UserService();
