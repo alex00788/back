@@ -37,6 +37,22 @@ class UserController {
     }
 
 
+
+    //Функция удалит пользователя из всех таб..., но только если почта не подтверждена!
+    async registerAgain(req, res, next) {
+        try {
+            const {email, idOrg} = req.body
+            //выносим логику в сервис
+            const registerAgainProcess = await user_service.registerAgain(email)
+            return res.status(200).json('Сброс данных выполнен!')
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
+
+
     //Функция меняющая названия организации во всех таблицах бд по id
     async renameOrg(req, res, next) {
         try {

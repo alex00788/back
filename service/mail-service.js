@@ -44,7 +44,7 @@ class MailService {
                              сохраните его чтобы не забыть! 
                       </p>   
                       <strong style="text-decoration: underline"> 
-                        Пароль знаете тока вы! 
+                        Пароль знаете только Вы, 
                       </strong> 
                       ...без него данные будут потеряны!  
                       <br>

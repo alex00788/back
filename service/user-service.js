@@ -36,6 +36,7 @@ class UserService {
         }
 
         const role = this.role
+
 //проверка, есть ли такой user
         const candidate = await User.findOne({where: {email}})
         if (candidate) {
@@ -44,12 +45,19 @@ class UserService {
         }
         const phoneRepeat = await User.findOne({where: {phoneNumber}})
         if (phoneRepeat) {
-            throw ApiError.badRequest('телефон уже зарегистрирован')
+            throw ApiError.badRequest('Телефон уже зарегистрирован')
         }
 //хешируем пароль, 2ым параметром указываем сколько раз хешить
         const hashPassword = await bcrypt.hash(password, 3)
 //указываем ссылку по которой пользователь будет переходить в аккаунт и подтверждать его!
         const activationLink = uuid.v4()      //  генерим ссылку  с помощью  uuid.v4()
+
+
+//проверяем есть ли в табл организации данный email, если есть то данные о idOrg и ее название берем оттуда
+        const adminSelectedOrg = await Organization.findOne({where: {email}})
+        sectionOrOrganization = adminSelectedOrg? adminSelectedOrg.nameOrg : sectionOrOrganization
+        idOrg = adminSelectedOrg? adminSelectedOrg.idOrg : idOrg
+
 //сохраняем пользователя в БД
         const user = await User.create({
             email,
@@ -72,18 +80,13 @@ class UserService {
 // также переменная чтоб клиенту вернуть нужные поля тк большое кол-во полей не сохраняет бд
         const userDto = new UserDto(user)
 
-        const adminSelectedOrg = await Organization.findOne({where: {email}})
-
-       //добавляем id в таблицу организации
+//добавляем id пользователя в таблицу организации если она там есть...
         if (adminSelectedOrg) {
             adminSelectedOrg.userId = userDto.id
             adminSelectedOrg.save({fields: ['userId']})
-        }
 
-        const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
-        const roleNewUser = adminSelectedOrg ? "ADMIN" : "USER"
-        //удаляем начальные настройки admina но только если его зовут новая...
-        if (adminSelectedOrg) {
+//удаляем начальные настройки admina но только если его зовут новая...
+            const idNewOrg = JSON.stringify(+adminSelectedOrg?.dataValues?.idOrg)
             const refreshAdminOrg = await DataUserAboutOrg.findAll({where: {idOrg: idNewOrg}})
             const findAdminOrg = refreshAdminOrg.map(el => el.dataValues)
             const dataDelEl = findAdminOrg.find(el => el.roleSelectedOrg === "ADMIN")
@@ -93,6 +96,10 @@ class UserService {
             }
         }
 
+        idOrg = adminSelectedOrg ? adminSelectedOrg.idOrg : idOrg;
+        sectionOrOrganization = adminSelectedOrg ? adminSelectedOrg.nameOrg : sectionOrOrganization;
+        const roleSelectedOrg = adminSelectedOrg ? "ADMIN" : "USER";
+
 //сохраняем данные о выбранной организации
         const dataUsersAboutOrg = await DataUserAboutOrg.create({
             nameUser,
@@ -100,7 +107,7 @@ class UserService {
             userId: user.id,
             idOrg,
             sectionOrOrganization,
-            roleSelectedOrg: roleNewUser,
+            roleSelectedOrg,
             remainingFunds,
             timeStartRec: '15',
             timeMinutesRec: '00',
@@ -118,6 +125,24 @@ class UserService {
         return {...token, user: userDto}
     }
 
+
+
+    async registerAgain(email) {
+        const org = await Organization.findOne({where: {email}})
+        const user = await User.findOne({where: {email}})
+        let userId = user.id;
+        if (user.dataValues.isActivated) {
+            throw ApiError.badRequest('Данные пользователя подтверждены! Сброс данных невозможен!')
+        } else {
+            const deleteUser = await User.destroy({where: {id: userId}})
+            if ( typeof userId === "number") {
+                userId = JSON.stringify(userId);
+            }
+            await DataUserAboutOrg.destroy({where: {userId: userId}})
+              //возвращ нач значен админа
+            await DataUserAboutOrg.create(this.adminSettingsForNewOrg(org.dataValues.idOrg, org.dataValues.nameOrg))
+        }
+    }
 
     async activate(activationLink) {
         //в БД ищем польз по этой ссылке
@@ -221,27 +246,31 @@ class UserService {
             })
         } else {
             //создаю админские настройки в таблице данных о новой орг и как тока пользователь с email из табл организац зарегистрируеться, их удалю
-            const adminSettingsNewOrg = await DataUserAboutOrg.create({
-                nameUser: 'Новая',
-                surnameUser: 'Организация',
-                userId: '-',
-                idOrg: idOrg.dataValues.idOrg,
-                sectionOrOrganization: nameOrg,
-                roleSelectedOrg: "ADMIN",
-                remainingFunds: '-',
-                timeStartRecord: '12',
-                timeMinutesRec: '00',
-                timeLastRec: '11',
-                maxClients: '3',
-                timeUntilBlock: '12',
-                location: 'Задать в настройках',
-                phoneOrg: 'Задать в настройках',
-            })
+            const adminSettingsNewOrg = await DataUserAboutOrg.create(this.adminSettingsForNewOrg(idOrg.dataValues.idOrg, nameOrg))
         }
 
         return newOrganization
     }
 
+    // Функция, которая делает заглушку моковыми данными и настройками пока не зарегистрируеться ее владелец!
+    adminSettingsForNewOrg(idOrg, nameOrg) {
+       return {
+            nameUser: 'Новая',
+            surnameUser: 'Организация',
+            userId: '-',
+            idOrg: idOrg,
+            sectionOrOrganization: nameOrg,
+            roleSelectedOrg: "ADMIN",
+            remainingFunds: '-',
+            timeStartRecord: '12',
+            timeMinutesRec: '00',
+            timeLastRec: '11',
+            maxClients: '3',
+            timeUntilBlock: '12',
+            location: 'Задать в настройках',
+            phoneOrg: 'Задать в настройках',
+        }
+    }
 
     async setSettings(newSettings) {
         await this.changeWorkStatusAllEntries(newSettings)

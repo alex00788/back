@@ -36,6 +36,7 @@ router.post('/addSubscription', userController.addSubscription)
 router.post('/changeRole', userController.changeRole)
 router.put('/renameUser', userController.renameUser)
 router.put('/renameOrg', userController.renameOrg)
+router.put('/registerAgain', userController.registerAgain)
 
 // router.get('/getAllEntry', userController.getAllEntry)
 router.get('/getAllEntryAllUsers', userController.getAllEntryAllUsers)
