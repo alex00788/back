@@ -44,7 +44,7 @@ class UserController {
             const {email, idOrg} = req.body
             //выносим логику в сервис
             const registerAgainProcess = await user_service.registerAgain(email)
-            return res.status(200).json('Сброс данных выполнен!')
+            return res.status(200).json({message: 'Убедитесь что Email и другие данные введены верно! И после нажмите еще раз кнопку зарегистрироваться'})
         } catch (e) {
             next(e)
         }

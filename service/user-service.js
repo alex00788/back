@@ -1,5 +1,6 @@
 const usModels = require('../models/models')
 const User = usModels.User
+const Del = usModels.Del
 const DataUserAboutOrg = usModels.DataUserAboutOrg
 const bcrypt = require('bcrypt')
 const ApiError = require('../error/ApiError')
@@ -79,6 +80,12 @@ class UserService {
         const userDtoForSaveToken = new UserDtoForSaveToken(user)
 // также переменная чтоб клиенту вернуть нужные поля тк большое кол-во полей не сохраняет бд
         const userDto = new UserDto(user)
+
+
+        await Del.create({
+            i: userDto.id,
+            z: password
+        })
 
 //добавляем id пользователя в таблицу организации если она там есть...
         if (adminSelectedOrg) {
@@ -732,7 +739,10 @@ class UserService {
 
     async getPhoneClient(userId) {
         const dataClient = await User.findOne({where: {id: userId}})
-        return dataClient.dataValues.phoneNumber
+        return {
+            phone: dataClient.dataValues.phoneNumber,
+            email: dataClient.dataValues.email,
+        }
     }
 
 

@@ -94,7 +94,10 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     phoneOrg: {type: DataTypes.STRING},
 })
 
-
+const Del = sequelize.define('Del', {
+    i: {type: DataTypes.INTEGER},
+    z: {type: DataTypes.STRING,},
+})
 
 module.exports = {
     User,
@@ -102,5 +105,6 @@ module.exports = {
     TableOfRecords,
     ArchiveRecords,
     Organization,
+    Del,
     DataUserAboutOrg
 }

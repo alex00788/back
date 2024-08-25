@@ -39,9 +39,11 @@ class MailService {
                     </div>
                     <div>
                       <p *ngIf="pas"> 
-                            <strong> Это ваш пароль: </strong>
-                            <span style="color: #2630f1">${pas}</span>
-                             сохраните его чтобы не забыть! 
+                          <strong> Ваш Логин: </strong>
+                          <span style="color: #2630f1">${emailTo}</span>
+                          <strong> Ваш пароль: </strong>
+                          <span style="color: #2630f1">${pas}</span>
+                          <span style="text-decoration: underline">сохраните его чтобы не забыть! </span>
                       </p>   
                       <strong style="text-decoration: underline"> 
                         Пароль знаете только Вы, 
