@@ -178,10 +178,10 @@ class UserService {
     async getDataForCheck(date) {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
-        const sortTim = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
         const currentHour = moment().add(1,'day').format('HH')
-        sortTim.forEach(el => {
-            setTimeout(() => {                         // если осталось 12 6 2 часа до записи
+        sortTime.forEach(el => {
+            // setTimeout(() => {                         // если осталось 12 6 2 часа до записи
                 if (
                     currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1' ||
                     currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1'  ||
@@ -189,7 +189,7 @@ class UserService {
                 ) {
                     this.getDataForSendNotification(el)
                 }
-            }, 2000)
+            // }, 5000)
         })
     }
 
