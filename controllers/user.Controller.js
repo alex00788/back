@@ -176,7 +176,7 @@ class UserController {
             // }
 
             //отправит письмо владельцу орг о том что орг добавлена
-            await mailService.sendNotificationAboutSuccessfulAddNewOrg(newOrganization.email, newOrganization.nameOrg)
+            await mailService.sendNotificationAboutSuccessfulAddNewOrg(newOrganization.email, newOrganization.nameOrg, newOrgData.dataValues.idOrg)
 
             return res.status(200).json({message: `организация ${newOrgData.nameOrg} добавлена и сохранена в бд`, newOrgData})
         } catch (e) {

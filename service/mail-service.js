@@ -224,7 +224,7 @@ class MailService {
     }
 
 
-    sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg) {  // оповещение пользователю о том что организация добавлена
+    sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg, idOrg) {  // оповещение пользователю о том что организация добавлена
         this.transporter.sendMail({
                 from: process.env.SMTP_USER,
                 to: emailNewOrg,
@@ -233,6 +233,11 @@ class MailService {
                 html:
                     `<div>
                         <p> Организация ${nameOrg} успешно добавлена </p>
+                        <p> Добавте к себе на сайт или страницу кнопку воити в личный кабинет или записаться онлайн</p>
+                        <p> На данную кнопку прикрепить сылку:</p>
+                        <p style="color: #5238fd"> записькпрофи.рф?organization=${nameOrg}&i=${idOrg}</p>
+                        <p> Для того чтобы клиенты сразу попадали в вашу организацию при входе в личный кабинет или при регистрации</p>
+                        <br>
                         <p> Если вы этого не делали,</p>
                         <p> Просто проигнорируйте это письмо</p>
                         <p> Созданно автоматически отвечать не нужно...</p>
