@@ -30,7 +30,7 @@ class UserService {
             throw ApiError.badRequest('Некорректный email или password')
         }
 // РОЛЬ  присваиваеться  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
-        if (email === "alex-007.88@mail.ru" || phoneNumber === '+79168402927') {
+        if (email === "alex-007.88@mail.ru" && phoneNumber === '+79168402927') {
             this.role = this.mainAdminRole
         } else {
             this.role = this.userRole
