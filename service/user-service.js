@@ -23,6 +23,7 @@ class UserService {
     userRole = "USER"
     adminRole = "ADMIN"
     mainAdminRole = "MAIN_ADMIN"
+    emailUnauthorized = [];
 
     async registration(email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds) {
 //если данных нет
@@ -152,11 +153,16 @@ class UserService {
     }
 
     async activate(activationLink) {
+        if (!activationLink) {
+            await mailService.errorWhenActivatingLink('ссылка активации отсутствует!')
+            throw ApiError.badRequest('ссылка активации отсутствует!')
+        }
         //в БД ищем польз по этой ссылке
         const user = await User.findOne({where: {activationLink}})
 
         //проверяем что пользов существует
         if (!user) {
+            await mailService.errorWhenActivatingLink('Некорректная ссылка активации')
             throw ApiError.badRequest('Некорректная ссылка активации')
         }
         user.isActivated = true;
@@ -660,6 +666,68 @@ class UserService {
         getDataForChange.remainingFunds = JSON.stringify(data.remainingFunds)
         await getDataForChange.save({fields: ['remainingFunds']})
         return getDataForChange
+    }
+
+
+
+
+
+//функция удалит всех кто не подтвердил почту из 4x таблиц
+    async clearingUnauthorized() {
+        const allUsers= await User.findAll()
+        const unauthorizedUser = allUsers.filter(el=> !el.dataValues.isActivated)
+
+//функция удалит все новые организации у которых нет админа
+        const allOrg = await Organization.findAll()
+        const allOrgWithoutAdmin = allOrg.filter(e=> !e.userId)
+        if (allOrgWithoutAdmin.length) {
+            await allOrgWithoutAdmin.forEach(el=> {
+                Organization.destroy({where: {idOrg: el.idOrg}})
+                this.removeAllDataAbout(el.idOrg);
+            })
+        }
+
+        if (unauthorizedUser.length) {
+            //берем всех пользователей которые не подтвердили email
+            await unauthorizedUser.forEach(el => {
+                const id = el.id
+                this.emailUnauthorized.push(el.email)
+                this.removeUnauthorized(id, el.email)  // удаляем из User Del DataUserAboutOrg
+            })
+           await this.removeUnauthorizedAdminOrg()  //  удаляем из Organization если админ не подтвердил почту
+        }
+    }
+
+    async removeUnauthorized(id, email){
+        await User.destroy({where: {id}})
+        await Del.destroy({where: {i: id}})
+        await DataUserAboutOrg.destroy({where: {userId: JSON.stringify(id)}})
+    }
+
+    async removeUnauthorizedAdminOrg(){
+        this.emailUnauthorized.forEach(el => {
+            this.removeTableOrg(el);
+        })
+    }
+
+    //функция смотрит в таблицу организации если там почта есть значит админ
+    async removeTableOrg(email){
+        const adminOrg = await Organization.findOne({where: {email}})
+        if (adminOrg) {
+            await Organization.destroy({where: {idOrg: adminOrg.idOrg}})
+            if (adminOrg?.dataValues?.idOrg) {
+                //Если админ то удаляем все поля в таблице дата об организации и ее клиентах
+                await this.removeAllDataAbout(adminOrg.dataValues.idOrg)
+            }
+        }
+    }
+
+    async removeAllDataAbout(idOrg){
+        idOrg = typeof idOrg === 'number'? JSON.stringify(idOrg) : idOrg;
+        const allUsersRemoveOrg= await DataUserAboutOrg.findAll({where: {idOrg}})
+        await allUsersRemoveOrg.forEach( el => {
+            DataUserAboutOrg.destroy({where: {idRec: el.dataValues.idRec}})
+        })
     }
 
 

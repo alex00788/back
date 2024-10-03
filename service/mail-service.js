@@ -99,6 +99,27 @@ class MailService {
         )
     }
 
+    //ошибка при активации ссылки если по какойто причине не работает должно прийти письмо мне
+    errorWhenActivatingLink (err) {
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: process.env.EMAIL_MY,
+                subject: 'ошибка при активации аккаунта',
+                text: '',
+                html:
+                    `<div>
+                        <h1>err при активации </h1>
+                        <p>err: ${err}</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>`
+            },
+        )
+    }
+
 
 //добавить переход на сайт в тексте письма
     notificationOfAnEntry(emailTo, nameUser,sectionOrOrganization, date, time) {

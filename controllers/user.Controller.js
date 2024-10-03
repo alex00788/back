@@ -227,6 +227,7 @@ class UserController {
         try {
             const date = req.body.threeMonthsAgo
             const clearRec = await user_service.clearTableRec(date)
+            const clearingUnauthorizedUsers = await user_service.clearingUnauthorized()
             return res.status(200).json({message: `данные таблицы записей перенесены в архив`})
         } catch (e) {
             next(e)
