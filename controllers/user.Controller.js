@@ -7,8 +7,13 @@ const uuid = require("uuid");
 class UserController {
     async registration(req, res, next) {
         try {
+            const {email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg} = req.body
             const errors = validationResult(req)
 
+            const sendMail = await mailService.checkingMailExists(email)
+            if (sendMail === 'errSend') {           //проверка, что почта вообще существует
+                throw ApiError.badRequest('Что-то с email, похоже он не существует!!!')
+            }
             if (errors.array()[0]?.path === "email" && errors.array()[0].msg === "Invalid value") {
                 return next(ApiError.badRequest(`некорректно введен email!`, errors.array()))
             }
@@ -22,7 +27,7 @@ class UserController {
                 return next(ApiError.badRequest(`ошибка при валидации`, errors.array()))
             }
 
-            const {email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg} = req.body
+
             const remainingFunds = '0'
             const userData = await user_service.registration(email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds)
 
@@ -166,6 +171,13 @@ class UserController {
     async addOrg(req, res, next) {
         try {
             const newOrganization = req.body
+
+            //проверка, что почта существует
+            const sendMail = await mailService.checkingMailExists(newOrganization.email)
+            if (sendMail === 'errSend') {
+                throw ApiError.badRequest('Что-то с email, похоже он не существует!')
+            }
+
             //выносим логику в сервис
             const newOrgData = await user_service.newOrg(newOrganization)
             if (!newOrgData) {
@@ -228,7 +240,7 @@ class UserController {
             const date = req.body.threeMonthsAgo
             const clearRec = await user_service.clearTableRec(date)
             const clearingUnauthorizedUsers = await user_service.clearingUnauthorized()
-            return res.status(200).json({message: `данные таблицы записей перенесены в архив`})
+            return res.status(200).json({message: `БД очищена, данные таблицы записей перенесены в архив`})
         } catch (e) {
             next(e)
         }

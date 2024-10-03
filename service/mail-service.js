@@ -244,6 +244,28 @@ class MailService {
         )
     }
 
+    checkingMailExists (email) {
+        return  this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: email,
+                subject: `На связи авто-администратор`,
+                text: 'textNull',
+                html:
+                    `<div>
+                        <p> Доброго времени суток &#128578; </p>
+                        <p> Благодарим что воспользовались нашими услугами. </p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
+            },
+        )
+            .catch((err) => {
+                return 'errSend'
+            })
+    }
 
     sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg, idOrg) {  // оповещение пользователю о том что организация добавлена
         this.transporter.sendMail({
@@ -270,7 +292,6 @@ class MailService {
                     </p>  `
             },
         )
-
     }
 
 
