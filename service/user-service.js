@@ -177,7 +177,31 @@ class UserService {
         let interval = setInterval(() => {
             const date = moment().format('DD.MM.YYYY')
             this.getDataForCheck(date)
+            this.checkNotification(date)      //убрать после проверки
         }, 3600000)
+    }
+
+    //убрать после проверки  всю функцию//временная функция проверки, для понимания, что происходит с уведомлениями
+    async checkNotification(date) {
+        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
+        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
+        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const currentHour = moment().clone().add(1,'day').format('HH')
+        sortTime.forEach(el => {
+
+            const dataTest = {
+                h: 'один раз в час должно приходить',
+                currentHour,
+                elTime: el.time,
+                t: 'time12 = el.time - 12 === currentHour',
+                time: el.time - 12,
+                t6: 'time6 = el.time - 6 === currentHour',
+                time6: el.time - 6,
+                t2: 'time2 = el.time - 2 === currentHour',
+                time2: el.time - 2,
+            }
+            this.getDataForSendNotification(el, dataTest)
+        })
     }
 
     //берем записи на сегодняшний день
@@ -185,7 +209,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().add(1,'day').format('HH')
+        const currentHour = moment().clone().add(1,'day').format('HH')
         sortTime.forEach(el => {
             // setTimeout(() => {                         // если осталось 12 6 2 часа до записи
                 if (
@@ -193,14 +217,16 @@ class UserService {
                     currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1'  ||
                     currentHour === JSON.stringify(+el.time - 2) && el.userId !== '*1'
                 ) {
-                    this.getDataForSendNotification(el)
+                    const data = null   //убрать после проверки
+                    this.getDataForSendNotification(el, data)     //убрать после проверки   !!!тока второй парам!!!
                 }
             // }, 5000)
         })
     }
 
     // функция берет почту клиента и отправляет ему письмо, что он записан
-    async getDataForSendNotification(user) {
+                                            //убрать после проверки     !!!второй параметр этой функции  === data
+    async getDataForSendNotification(user,  data) {
         const dataUser = await User.findOne({where: {id: user.userId}})
         const dataNotification = {
             name: dataUser.dataValues.nameUser,
@@ -211,6 +237,9 @@ class UserService {
         }
         //разблокировать когда все почты будут настоящими
         await mailService.sendNotificationAboutRec(dataNotification)
+        if (data) {                                                                   //убрать после проверки
+            await mailService.checkSendNotificationAboutRec(dataNotification, data)  //убрать после проверки
+        }                                                                           //убрать после проверки
     }
 
 
@@ -676,7 +705,6 @@ class UserService {
     async clearingUnauthorized() {
         const allUsers= await User.findAll()
         const unauthorizedUser = allUsers.filter(el=> !el.dataValues.isActivated)
-
 //функция удалит все новые организации у которых нет админа
         const allOrg = await Organization.findAll()
         const allOrgWithoutAdmin = allOrg.filter(e=> !e.userId)
@@ -686,15 +714,16 @@ class UserService {
                 this.removeAllDataAbout(el.idOrg);
             })
         }
-
+//берем всех пользователей которые не подтвердили email
         if (unauthorizedUser.length) {
-            //берем всех пользователей которые не подтвердили email
             await unauthorizedUser.forEach(el => {
                 const id = el.id
                 this.emailUnauthorized.push(el.email)
-                this.removeUnauthorized(id, el.email)  // удаляем из User Del DataUserAboutOrg
+// удаляем из User, Del, DataUserAboutOrg
+                this.removeUnauthorized(id, el.email)
             })
-           await this.removeUnauthorizedAdminOrg()  //  удаляем из Organization если админ не подтвердил почту
+// удаляем из Organization если админ не подтвердил почту
+           await this.removeUnauthorizedAdminOrg()
         }
     }
 
@@ -710,13 +739,13 @@ class UserService {
         })
     }
 
-    //функция смотрит в таблицу организации если там почта есть значит админ
+//функция смотрит в таблицу организации если там почта есть значит админ
     async removeTableOrg(email){
         const adminOrg = await Organization.findOne({where: {email}})
         if (adminOrg) {
             await Organization.destroy({where: {idOrg: adminOrg.idOrg}})
             if (adminOrg?.dataValues?.idOrg) {
-                //Если админ то удаляем все поля в таблице дата об организации и ее клиентах
+//Если админ, то удаляем все поля в таблице дата об организации и ее клиентах
                 await this.removeAllDataAbout(adminOrg.dataValues.idOrg)
             }
         }

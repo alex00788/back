@@ -218,6 +218,29 @@ class MailService {
         )
     }
 
+    //убрать после проверки  всю функцию
+    checkSendNotificationAboutRec(dataNotification, data) {     // отправка пользователю напоминания о записи
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: process.env.EMAIL_MY,
+                // to: dataNotification.email,
+                subject: `проверка`,
+                text: 'textNull',
+                html:
+                    `<div>
+                        <h3>кому отправляеться => ${dataNotification.email}</h3>
+                        <p>${dataNotification.dateRec} в ${dataNotification.timeRec} : 00</p>
+                        <p>${dataNotification.org}</p>
+                        ......
+                        <p>${data}</p>
+                        ......
+                        <p>${dataNotification}</p>
+                    </div>
+                    `
+            },
+        )
+    }
+
 
     sendNotificationAboutRec(dataNotification) {     // отправка пользователю напоминания о записи
         this.transporter.sendMail({
