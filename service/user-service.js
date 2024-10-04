@@ -177,31 +177,7 @@ class UserService {
         let interval = setInterval(() => {
             const date = moment().format('DD.MM.YYYY')
             this.getDataForCheck(date)
-            this.checkNotification(date)      //убрать после проверки
         }, 3600000)
-    }
-
-    //убрать после проверки  всю функцию//временная функция проверки, для понимания, что происходит с уведомлениями
-    async checkNotification(date) {
-        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
-        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
-        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().clone().add(1,'day').format('HH')
-        sortTime.forEach(el => {
-
-            const dataTest = {
-                h: 'один раз в час должно приходить',
-                currentHour,
-                elTime: el.time,
-                t: 'time12 = el.time - 12 === currentHour',
-                time: el.time - 12,
-                t6: 'time6 = el.time - 6 === currentHour',
-                time6: el.time - 6,
-                t2: 'time2 = el.time - 2 === currentHour',
-                time2: el.time - 2,
-            }
-            this.getDataForSendNotification(el, dataTest)
-        })
     }
 
     //берем записи на сегодняшний день
@@ -212,34 +188,33 @@ class UserService {
         const currentHour = moment().clone().add(1,'day').format('HH')
         sortTime.forEach(el => {
             // setTimeout(() => {                         // если осталось 12 6 2 часа до записи
-                if (
-                    currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1' ||
-                    currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1'  ||
-                    currentHour === JSON.stringify(+el.time - 2) && el.userId !== '*1'
-                ) {
-                    const data = null   //убрать после проверки
-                    this.getDataForSendNotification(el, data)     //убрать после проверки   !!!тока второй парам!!!
-                }
-            // }, 5000)
+            if (currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1') {
+                this.getDataForSendNotification(el, 12)
+            }
+            if (currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1') {
+                this.getDataForSendNotification(el, 6)
+            }
+            if (currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1') {
+                this.getDataForSendNotification(el, 2)
+            }
+            // }, 3000)
         })
     }
 
     // функция берет почту клиента и отправляет ему письмо, что он записан
-                                            //убрать после проверки     !!!второй параметр этой функции  === data
-    async getDataForSendNotification(user,  data) {
+    async getDataForSendNotification(user, beforeRec) {
         const dataUser = await User.findOne({where: {id: user.userId}})
         const dataNotification = {
             name: dataUser.dataValues.nameUser,
             email: dataUser.dataValues.email,
             dateRec: user.date,
             timeRec: user.time,
-            org: user.sectionOrOrganization
+            org: user.sectionOrOrganization,
+            timeLeft: beforeRec,
+            now: moment().clone().add(1,'day').format('HH')
         }
         //разблокировать когда все почты будут настоящими
         await mailService.sendNotificationAboutRec(dataNotification)
-        if (data) {                                                                   //убрать после проверки
-            await mailService.checkSendNotificationAboutRec(dataNotification, data)  //убрать после проверки
-        }                                                                           //убрать после проверки
     }
 
 
