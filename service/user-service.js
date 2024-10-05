@@ -187,6 +187,7 @@ class UserService {
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
         const currentHour = moment().clone().add(1,'day').format('HH')
         sortTime.forEach(el => {
+            this.getDataForSendNotification(el, currentHour)
             // setTimeout(() => {                         // если осталось 12 6 2 часа до записи
             if (currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1') {
                 this.getDataForSendNotification(el, 12)
