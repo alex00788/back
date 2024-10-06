@@ -174,48 +174,109 @@ class UserService {
 
     //Функция 1 раз в час смотрит в базу данных, чтоб отправить напоминание
     async checkRecordForSendMail() {
-        let interval = setInterval(() => {
-            const date = moment().format('DD.MM.YYYY')
-            this.getDataForCheck(date)
-        }, 3600000)
+      setInterval(() => {
+          this.checkRecordToday2()
+          setTimeout(() => {this.checkRecordToday6()},20000)
+          setTimeout(() => {this.checkRecordToday12()},40000)
+          setTimeout(() => {this.checkRecordTomorrowForSendMail()},70000)
+      }, 3600000)
     }
 
-    //берем записи на сегодняшний день
-    async getDataForCheck(date) {
+    //Напоминание тем кто записан на сегодня через 2 часов
+    async checkRecordToday2() {
+        const date = moment().format('DD.MM.YYYY')
+        const today = true
+        await this.getDataForCheckFor2(date, today)
+    }
+    async getDataForCheckFor2(date, today) {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
         const currentHour = moment().clone().add(1,'day').format('HH')
-        sortTime.forEach(el => {
-            this.getDataForSendNotification(el, currentHour)
-            // setTimeout(() => {                         // если осталось 12 6 2 часа до записи
-            if (currentHour === JSON.stringify(+el.time - 12) && el.userId !== '*1') {
-                this.getDataForSendNotification(el, 12)
+        sortTime.forEach(user => {
+            const timeCheck = +user.time - 2 < 10 && +user.time - 2 >= 0? '0' + (+user.time - 2) : JSON.stringify(+user.time - 2)
+            if (currentHour == timeCheck && user.userId !== '*1') {
+                this.getDataForSendNotification(user, 2, today)
             }
-            if (currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1') {
-                this.getDataForSendNotification(el, 6)
+        })
+    }
+
+    //Напоминание тем кто записан на сегодня через 6 часов
+    async checkRecordToday6() {
+        const dateTomorrow = moment().format('DD.MM.YYYY')
+        const today = true
+        await this.getDataForCheck6(dateTomorrow, today)
+    }
+    async getDataForCheck6(date, today) {
+        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
+        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
+        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const currentHour = moment().clone().add(1,'day').format('HH')
+        sortTime.forEach(user => {
+            const timeCheck6 = +user.time - 6 < 10 && +user.time - 6 >= 0? '0' + (+user.time - 6) : JSON.stringify(+user.time - 6)
+            if (currentHour == timeCheck6 && user.userId !== '*1') {
+                this.getDataForSendNotification(user, 6, today)
             }
-            if (currentHour === JSON.stringify(+el.time - 6) && el.userId !== '*1') {
-                this.getDataForSendNotification(el, 2)
+        })
+    }
+
+    //Напоминание тем кто записан на сегодня через 12 часов
+    async checkRecordToday12() {
+        const dateTomorrow = moment().format('DD.MM.YYYY')
+        const today = true
+        await this.getDataForCheck12(dateTomorrow, today)
+    }
+    async getDataForCheck12(date, today) {
+        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
+        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
+        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const currentHour = moment().clone().add(1,'day').format('HH')
+        sortTime.forEach(user => {
+            const timeCheck12 = +user.time - 12 < 10 && +user.time - 12 >= 0? '0' + (+user.time - 12) : JSON.stringify(+user.time - 12)
+            if (currentHour == timeCheck12 && user.userId !== '*1') {
+                this.getDataForSendNotification(user, 12, today)
             }
-            // }, 3000)
+        })
+    }
+
+    //Напоминание тем кто записан на завтра
+    async checkRecordTomorrowForSendMail() {
+        const dateTomorrow = moment().clone().add(1,'day').format('DD.MM.YYYY')
+        const today = false
+        await this.getDataForCheckTomorrow(dateTomorrow, today)
+    }
+    async getDataForCheckTomorrow(date, today) {
+        const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
+        const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
+        const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
+        const currentHour = moment().clone().add(1,'day').format('HH')
+        sortTime.forEach(user => {
+            const timeCheckTomorrow = +user.time < 10 && +user.time >= 0? '0' + (+user.time) : JSON.stringify(+user.time)
+            if (currentHour == timeCheckTomorrow && user.userId !== '*1') {
+                this.getDataForSendNotification(user, 24, today)
+            }
         })
     }
 
     // функция берет почту клиента и отправляет ему письмо, что он записан
-    async getDataForSendNotification(user, beforeRec) {
+    async getDataForSendNotification(user, remainingTime, today) {
         const dataUser = await User.findOne({where: {id: user.userId}})
+        const currentHour = moment().clone().add(1,'day').format('HH')
         const dataNotification = {
             name: dataUser.dataValues.nameUser,
             email: dataUser.dataValues.email,
             dateRec: user.date,
             timeRec: user.time,
             org: user.sectionOrOrganization,
-            timeLeft: beforeRec,
-            now: moment().clone().add(1,'day').format('HH')
+            remainingTime,
+            currentHour
         }
-        //разблокировать когда все почты будут настоящими
-        await mailService.sendNotificationAboutRec(dataNotification)
+        if (today) {
+            await mailService.sendNotificationAboutRec(dataNotification) //разблокировать когда все почты будут настоящими
+        } else {
+            await mailService.sendNotificationAboutRecOnTomorrow(dataNotification) //разблокировать когда все почты будут настоящими
+        }
+
     }
 
 

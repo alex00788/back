@@ -231,8 +231,8 @@ class MailService {
                         <p>Напоминаем вам, что вы записаны</p>
                         <p>${dataNotification.dateRec} в ${dataNotification.timeRec} : 00</p>
                         <p>${dataNotification.org}</p>
-                        <p>Сейчас: ${dataNotification.now} часов</p>
-                        <p>До начала осталось менее: ${dataNotification.timeLeft} часов</p>
+                        <p>Сейчас: ${dataNotification.currentHour} часов</p>
+                        <p>До начала осталось менее: ${dataNotification.remainingTime} часов</p>
                         <p> Если у вас изменились планы,</p>
                         <p> Пожалуйста, отмените запись в личном кабинете,</p>
                         <p> Чтобы, избежать блокировки в дальнейшем!</p>
@@ -245,6 +245,33 @@ class MailService {
             },
         )
     }
+
+    sendNotificationAboutRecOnTomorrow(dataNotification) {     // отправка пользователю напоминания о записи
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: dataNotification.email,
+                subject: `Напоминание о записи на завтра ${dataNotification.org}`,
+                text: 'textNull',
+                html:
+                    `<div>
+                        <h3>Уважаемый(-ая) ${dataNotification.name}</h3>
+                        <p>Напоминаем вам, что вы записаны завтра</p>
+                        <p>${dataNotification.dateRec} в ${dataNotification.timeRec} : 00</p>
+                        <p>${dataNotification.org}</p>
+                        <p> Если у вас изменились планы,</p>
+                        <p> Пожалуйста, отмените запись в личном кабинете,</p>
+                        <p> Чтобы, избежать блокировки в дальнейшем!</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>  `
+            },
+        )
+    }
+
+
 
     checkingMailExists (email) {
         return  this.transporter.sendMail({
