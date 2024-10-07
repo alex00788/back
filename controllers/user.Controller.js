@@ -227,6 +227,9 @@ class UserController {
     async rememberPas(req, res, next) {
         try {
             const userEmail = req.body.email
+            if (!userEmail) {
+                throw ApiError.badRequest('email не указан!')
+            }
             const p = await user_service.rememberPasThisUser(userEmail)
             await mailService.rememberP(userEmail, p.z)
             return res.status(200).json({message: ` пароль отправлен на почту ${userEmail}`})
