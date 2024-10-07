@@ -7,6 +7,8 @@ module.exports = class UserDto {
     surnameUser;
     sectionOrOrganization;
     idOrg;
+    initialValueSectionOrOrganization;
+    initialValueIdOrg;
     remainingFunds;
 
     constructor(model) {
@@ -19,7 +21,8 @@ module.exports = class UserDto {
         this.remainingFunds = model.remainingFunds;
         this.sectionOrOrganization = model.sectionOrOrganization;
         this.idOrg = model.idOrg;
-
+        this.initialValueSectionOrOrganization = model.sectionOrOrganization;
+        this.initialValueIdOrg = model.idOrg;
     }
 }
 
