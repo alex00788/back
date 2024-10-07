@@ -121,6 +121,31 @@ class MailService {
     }
 
 
+
+    //напоминалка пароля
+    rememberP (email, pas) {
+        this.transporter.sendMail({
+                from: process.env.SMTP_USER,
+                to: email,
+                subject: 'Напоминание пароля',
+                text: '',
+                html:
+                    `<div>
+                        <h1> Здравствуйте ! </h1>
+                        <p> Ваш пароль: ${pas}</p>
+                        <p> Если вы не запрашивали пароль, свяжитесь с администратором!</p>
+                        <p> Созданно автоматически отвечать на это письмо не нужно!</p>
+                    </div>
+                    <p> С уважением, команда 
+                        <strong style="color: #2630f1; cursor: pointer">
+                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                        </strong>
+                    </p>`
+            },
+        )
+    }
+
+
 //добавить переход на сайт в тексте письма
     notificationOfAnEntry(emailTo, nameUser,sectionOrOrganization, date, time) {
         this.transporter.sendMail({

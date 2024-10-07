@@ -222,6 +222,19 @@ class UserController {
         }
     }
 
+
+    //отправка пароля на почту пользователя
+    async rememberPas(req, res, next) {
+        try {
+            const userEmail = req.body.email
+            const p = await user_service.rememberPasThisUser(userEmail)
+            await mailService.rememberP(userEmail, p.z)
+            return res.status(200).json({message: ` пароль отправлен на почту ${userEmail}`})
+        } catch (e) {
+            next(e)
+        }
+    }
+
     //отправка сообщения о доработки функционала от пользователей мне на почту
     async sendInSupport(req, res, next) {
         try {

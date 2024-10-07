@@ -891,6 +891,11 @@ class UserService {
         return await User.findOne({where: {email}})
     }
 
+    async rememberPasThisUser(email) {
+        const user = await User.findOne({where: {email}})
+        return await Del.findOne({where: {i: user.dataValues.id}})
+    }
+
     async getAllOrg() {
         const allOrg = await Organization.findAll()
         return allOrg.map((el) => {
