@@ -367,6 +367,22 @@ class UserController {
         }
     }
 
+
+    //Функция удалит все что связано с этой почтой из всех таблиц
+    async deleteTestData(req, res, next) {
+        try {
+            const email = req.params.email
+            //выносим логику в сервис
+            const deleteDataConnectedWithEmail= await user_service.removeDataConnectedWithEmail(email)
+
+            return res.status(200).json({message: `Все данные связанные с ${email} удалены!`})
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
+
     //функция, которая удалит выбранную запись
     async deleteOwnEntry(req, res, next) {
         try {

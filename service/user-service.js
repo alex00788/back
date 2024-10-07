@@ -690,6 +690,57 @@ class UserService {
 
 
 
+    // Удаление всех данных связанных с этой почтой
+    async removeDataConnectedWithEmail(email) {
+        const user = await User.findOne({where: {email}})
+        if (!user) {
+            throw ApiError.badRequest('Такой почты нет в базе!')
+        } else {
+            const idUser = user.dataValues.id
+            const org = await Organization.findOne({where: {email}})
+            await User.destroy({where: {id: idUser}})   //удалит одну строку по id пользователя в таб User
+            await Del.destroy({where: {i: idUser}})     //удалит одну строку по id пользователя в таб Del
+            await this.removeTestDataAsUserOnIdUser(idUser)
+            if (org) {
+                const idOrg = org.dataValues.idOrg
+                await Organization.destroy({where: {idOrg}})   //удалит одну орг
+                await this.removeTestDataAsAdminOnIdOrg(idOrg)
+            }
+        }
+    }
+
+    async removeTestDataAsUserOnIdUser(idUser){
+        idUser = typeof idUser === 'number'? JSON.stringify(idUser) : idUser;
+        const allRecUser= await DataUserAboutOrg.findAll({where: {userId: idUser}})
+        await allRecUser.forEach( el => {
+            DataUserAboutOrg.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+        const allRecInTableOfRecords= await TableOfRecords.findAll({where: {userId: idUser}})
+        await allRecInTableOfRecords.forEach( el => {
+            TableOfRecords.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+        const allRecInArchiveRecords= await ArchiveRecords.findAll({where: {userId: idUser}})
+        await allRecInArchiveRecords.forEach( el => {
+            ArchiveRecords.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+    }
+    async removeTestDataAsAdminOnIdOrg(idOrg){
+        idOrg = typeof idOrg === 'number'? JSON.stringify(idOrg) : idOrg;
+        const allUsersRemoveOrg= await DataUserAboutOrg.findAll({where: {idOrg}})
+        await allUsersRemoveOrg.forEach( el => {
+            DataUserAboutOrg.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+        const allRecRemoveOrg= await TableOfRecords.findAll({where: {orgId: idOrg}})
+        await allRecRemoveOrg.forEach( el => {
+            TableOfRecords.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+        const allRecFromArchiveRecords= await ArchiveRecords.findAll({where: {orgId: idOrg}})
+        await allRecFromArchiveRecords.forEach( el => {
+            ArchiveRecords.destroy({where: {idRec: el.dataValues.idRec}})
+        })
+    }
+
+
     //фильтруем данные из бд получая записи всех пользователей КОНКРЕТНОЙ организации в выбранном месяце
     async getAllEntryCurrentUser(dataYear, month, userId) {
         const res = []

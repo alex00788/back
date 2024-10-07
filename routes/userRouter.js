@@ -46,6 +46,7 @@ router.get('/getAllUsers', userController.getAllUsersToFillInput)
 router.get('/getPhoneClient', userController.getPhoneClient)
 router.get('/getAllUsersCurrentOrganization', userController.getAllUsersCurrentOrganization)
 router.delete('/deleteEntry/:id/:userId/:orgId/:userCancelHimselfRec/:workStatus', userController.deleteOwnEntry)
+router.delete('/deleteTestData/:email', userController.deleteTestData)
 router.get('/getAllEntryInCurrentTimes', userController.getAllEntryInCurrentTimes)
 
 
