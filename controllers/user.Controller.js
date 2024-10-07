@@ -202,7 +202,7 @@ class UserController {
             const addNewOrg = req.body
             const email = process.env.EMAIL_MY
             await mailService.sendNewOrg(email, addNewOrg)
-            return res.status(200).json({message: `организация ${addNewOrg.nameSectionOrOrganization} будет доступна в течении 5-10 минут, вам придет сообщение на почту.`})
+            return res.status(200).json({message: `${addNewOrg.nameSectionOrOrganization} скоро будет доступна, вам придет сообщение на почту.`})
         } catch (e) {
             next(e)
         }
