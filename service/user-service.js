@@ -1063,8 +1063,7 @@ class UserService {
 
 
     async getAllUsers() {
-        const users = await User.findAll()
-        return users;
+        return await User.findAll();
     }
 
     //функция, которая переключает роль пользователя и перезаписывает в базе данных

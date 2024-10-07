@@ -46,9 +46,9 @@ class UserController {
     //Функция удалит пользователя из всех таб..., но только если почта не подтверждена!
     async registerAgain(req, res, next) {
         try {
-            const {email, idOrg} = req.body
+            const {email} = req.body
             //выносим логику в сервис
-            const registerAgainProcess = await user_service.registerAgain(email)
+            await user_service.registerAgain(email)
             return res.status(200).json({message: 'Убедитесь что Email и другие данные введены верно! И после нажмите еще раз кнопку зарегистрироваться'})
         } catch (e) {
             next(e)
