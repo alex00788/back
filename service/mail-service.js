@@ -323,13 +323,16 @@ class MailService {
         this.transporter.sendMail({
                 from: process.env.SMTP_USER,
                 to: emailNewOrg,
-                subject: `Организация ${nameOrg} успешно добавлена`,
+                subject: `Организация ${nameOrg} успешно добавлено!`,
                 text: 'textNull',
                 html:
                     `<div>
-                        <p> ${nameOrg} успешно добавлена </p>
+                        <p> ${nameOrg} успешно добавлено! </p>
                         <p> Ссылка чтобы клиенты сразу попадали в вашу организацию: </p>
-                        <p style="color: #5238fd"> записькпрофи.рф?organization=${nameOrg}&i=${idOrg}</p>
+                        <a style="color: #5238fd" href="записькпрофи.рф?organization=${nameOrg}&i=${idOrg}"
+                        > 
+                        записькпрофи.рф?organization=${nameOrg}&i=${idOrg}
+                        </a>
                         <br>
                         <p> Добавте к себе на сайт или страницу</p>
                     </div>
