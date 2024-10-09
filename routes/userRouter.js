@@ -6,7 +6,7 @@ const authMiddleware = require('../middleware/AuthMiddleware')
 
 router.post('/registration',
     body('email').isEmail(),                                 //вызываем как мидлвеер и внутри название поля которое хотим провалидировать
-    body('password').isLength({min: 3, max: 10}),     // есть много валидаторов
+    body('password').isLength({min: 3, max: 20}),     // есть много валидаторов
     body('phoneNumber').isMobilePhone(),                    // проверка тел
     userController.registration
 )
