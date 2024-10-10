@@ -192,7 +192,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().clone().add(1,'day').format('HH')
+        const currentHour = (moment().clone().add(1,'day').subtract(3, 'h').format('HH'))
         sortTime.forEach(user => {
             const timeCheck = +user.time - 2 < 10 && +user.time - 2 >= 0? '0' + (+user.time - 2) : JSON.stringify(+user.time - 2)
             if (currentHour == timeCheck && user.userId !== '*1') {
