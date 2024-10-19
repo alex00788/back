@@ -199,6 +199,10 @@ class UserController {
     //Отправит письмо мне на почту с уведомлением, что хотят новую орг добавить
     async addNewOrg(req, res, next) {
         try {
+            const sendMail = await mailService.checkingMailExists(req.body.email)
+            if (sendMail === 'errSend') {           //проверка, что почта вообще существует
+                throw ApiError.badRequest('Что-то с email, похоже он не существует!!!')
+            }
             const addNewOrg = req.body
             const email = process.env.EMAIL_MY
             await mailService.sendNewOrg(email, addNewOrg)

@@ -192,7 +192,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = (moment().clone().add(1,'day').subtract(3, 'h').format('HH'))
+        const currentHour = (moment().clone().add(1,'day').add(3, 'h').format('HH'))
         sortTime.forEach(user => {
             const timeCheck = +user.time - 2 < 10 && +user.time - 2 >= 0? '0' + (+user.time - 2) : JSON.stringify(+user.time - 2)
             if (currentHour == timeCheck && user.userId !== '*1') {
@@ -211,7 +211,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().clone().add(1,'day').format('HH')
+        const currentHour = (moment().clone().add(1,'day').add(3, 'h').format('HH'))
         sortTime.forEach(user => {
             const timeCheck6 = +user.time - 6 < 10 && +user.time - 6 >= 0? '0' + (+user.time - 6) : JSON.stringify(+user.time - 6)
             if (currentHour == timeCheck6 && user.userId !== '*1') {
@@ -230,7 +230,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().clone().add(1,'day').format('HH')
+        const currentHour = (moment().clone().add(1,'day').add(3, 'h').format('HH'))
         sortTime.forEach(user => {
             const timeCheck12 = +user.time - 12 < 10 && +user.time - 12 >= 0? '0' + (+user.time - 12) : JSON.stringify(+user.time - 12)
             if (currentHour == timeCheck12 && user.userId !== '*1') {
@@ -249,7 +249,7 @@ class UserService {
         const allEntriesForThisDate = await TableOfRecords.findAll({where: {date}})
         const cleanArr = allEntriesForThisDate.map(el => el.dataValues)
         const sortTime = cleanArr.sort((a, b) => a.time > b.time ? 1 : -1)
-        const currentHour = moment().clone().add(1,'day').format('HH')
+        const currentHour = (moment().clone().add(1,'day').add(3, 'h').format('HH'))
         sortTime.forEach(user => {
             const timeCheckTomorrow = +user.time < 10 && +user.time >= 0? '0' + (+user.time) : JSON.stringify(+user.time)
             if (currentHour == timeCheckTomorrow && user.userId !== '*1') {
@@ -261,7 +261,7 @@ class UserService {
     // функция берет почту клиента и отправляет ему письмо, что он записан
     async getDataForSendNotification(user, remainingTime, today) {
         const dataUser = await User.findOne({where: {id: user.userId}})
-        const currentHour = moment().clone().add(1,'day').format('HH')
+        const currentHour = (moment().clone().add(1,'day').add(3, 'h').format('HH'))
         const dataNotification = {
             name: dataUser.dataValues.nameUser,
             email: dataUser.dataValues.email,
