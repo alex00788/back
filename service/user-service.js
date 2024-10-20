@@ -323,6 +323,12 @@ class UserService {
                 location: 'Задать в настройках',
                 phoneOrg: 'Задать в настройках',
             })
+
+            //меняем название и id стартовой организации
+            userAlreadyRegInUserTable.sectionOrOrganization = adminSettingsNewOrg.sectionOrOrganization
+            await userAlreadyRegInUserTable.save({fields: ['sectionOrOrganization']})
+            userAlreadyRegInUserTable.idOrg = adminSettingsNewOrg.idOrg
+            await userAlreadyRegInUserTable.save({fields: ['idOrg']})
         } else {
             //создаю админские настройки в таблице данных о новой орг и как тока пользователь с email из табл организац зарегистрируеться, их удалю
             const adminSettingsNewOrg = await DataUserAboutOrg.create(this.adminSettingsForNewOrg(idOrg.dataValues.idOrg, nameOrg))
