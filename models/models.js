@@ -83,6 +83,8 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     idOrg: {type: DataTypes.STRING, require: true },
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
     roleSelectedOrg: {type: DataTypes.STRING, require: true, defaultValue: "USER"},
+    jobTitle: {type: DataTypes.STRING, defaultValue: ""},
+    direction: {type: DataTypes.STRING, defaultValue: ""},
     remainingFunds: {type: DataTypes.STRING, defaultValue: "0"},
     timeStartRec: {type: DataTypes.STRING, defaultValue: "17"},
     timeMinutesRec: {type: DataTypes.STRING, defaultValue: "00"},

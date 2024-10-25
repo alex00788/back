@@ -16,6 +16,7 @@ const {Organization} = require("../models/models");
 const e = require("express");
 const {Json} = require("sequelize/lib/utils");
 const UserDtoRole = require("../dto/user_dto_chenge_role");
+const UserDtoJobTitle = require("../dto/user_dto_chenge_job_title");
 const moment = require("moment");
 
 class UserService {
@@ -116,6 +117,8 @@ class UserService {
             idOrg,
             sectionOrOrganization,
             roleSelectedOrg,
+            jobTitle: '',
+            direction: '',
             remainingFunds,
             timeStartRec: '15',
             timeMinutesRec: '00',
@@ -314,6 +317,8 @@ class UserService {
                 idOrg: idOrg.dataValues.idOrg,
                 sectionOrOrganization: nameOrg,
                 roleSelectedOrg: "ADMIN",
+                jobTitle: '',
+                direction: '',
                 remainingFunds: '-',
                 timeStartRecord: '12',
                 timeMinutesRec: '00',
@@ -337,7 +342,7 @@ class UserService {
         return newOrganization
     }
 
-    // Функция, которая делает заглушку моковыми данными и настройками пока не зарегистрируеться ее владелец!
+    // Функция, которая делает заглушку моковыми данными и настройками пока не зарегистрируется ее владелец!
     adminSettingsForNewOrg(idOrg, nameOrg) {
        return {
             nameUser: 'Новая',
@@ -346,6 +351,8 @@ class UserService {
             idOrg: idOrg,
             sectionOrOrganization: nameOrg,
             roleSelectedOrg: "ADMIN",
+            jobTitle: '',
+            direction: '',
             remainingFunds: '-',
             timeStartRecord: '12',
             timeMinutesRec: '00',
@@ -375,6 +382,8 @@ class UserService {
             idOrg: newSettings.orgId,
             sectionOrOrganization: newSettings.nameOrg,
             roleSelectedOrg: newSettings.roleSelectedOrg,
+            jobTitle: '',
+            direction: '',
             remainingFunds: newSettings.remainingFunds,
             timeStartRec: newSettings.timeStartRec,
             timeMinutesRec: newSettings.timeMinutesRec,
@@ -384,7 +393,6 @@ class UserService {
             location: newSettings.location,
             phoneOrg: newSettings.phoneOrg,
         }
-        console.log('231!!!!!!!!!!!!!!dddddddddddddddddd', idRec)
         await DataUserAboutOrg.destroy({where: {idRec}})
         //перезапишем строку в бд
         const saveSit = await DataUserAboutOrg.create(newSit)
@@ -967,6 +975,8 @@ class UserService {
                 idOrg: currentOrgId,
                 sectionOrOrganization: nameOrg,
                 roleSelectedOrg: 'USER',
+                jobTitle: '',
+                direction: '',
                 remainingFunds: '0',
                 timeStartRec: dataSettings.timeStartRec,
                 timeMinutesRec: dataSettings.timeMinutesRec,
@@ -988,6 +998,8 @@ class UserService {
                     surnameUser: i.surnameUser,
                     remainingFunds: i.remainingFunds,
                     role: i.roleSelectedOrg,
+                    jobTitle: i.jobTitle,
+                    direction: i.direction,
                     sectionOrOrganization: i.sectionOrOrganization,
                     timeStartRec: i.timeStartRec,
                     timeMinutesRec: i.timeMinutesRec,
@@ -1082,12 +1094,26 @@ class UserService {
         const userIdAndRole = await DataUserAboutOrg.findAll({where: {userId}})  //ищем все орг пользователя по id
         const res = [];
         userIdAndRole.forEach(el=> res.push(el.dataValues))
-        const findUserOrgData= res.find(currOrg => currOrg.idOrg === idOrg )
+        const findUserOrgData = res.find(currOrg => currOrg.idOrg === idOrg )
         const requiredField = await DataUserAboutOrg.findOne({where: {idRec:findUserOrgData.idRec}})
         requiredField.roleSelectedOrg = requiredField.roleSelectedOrg === 'USER'?  this.adminRole : this.userRole  //переключаем роль
         await requiredField.save({fields: ['roleSelectedOrg']})                                  //сохраняем ее в бд
         const userDtoRole = new UserDtoRole(requiredField)                                   //возвращаем нужные поля
         return userDtoRole;
+    }
+
+ //функция, которая делает из клиента сотрудника перезаписывает в базе данных
+    async changeJobTitle(userId, idOrg, jobTitle, direction) {
+        const userIdAndJobTitle = await DataUserAboutOrg.findAll({where: {userId}})  //ищем все орг пользователя по id
+        const res = [];
+        userIdAndJobTitle.forEach(el=> res.push(el.dataValues))
+        const userOrgData = res.find(currOrg => currOrg.idOrg === idOrg )
+        const requiredField = await DataUserAboutOrg.findOne({where: {idRec:userOrgData.idRec}})
+        requiredField.jobTitle = jobTitle
+        await requiredField.save({fields: ['jobTitle']})
+        requiredField.direction = direction
+        await requiredField.save({fields: ['direction']})
+        return  new UserDtoJobTitle(requiredField)                                   //возвращаем нужные поля
     }
 
 

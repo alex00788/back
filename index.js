@@ -42,7 +42,12 @@ app.use(errorHandler)
 const start = async () => {
     try {
         await sequelize.authenticate()     //подключение к postgresql
-        await sequelize.sync()             //   сверяет состояние бд со схемой
+// приводит таблицу в соответствие с моделью   //меняем при добавлении колонки
+        await sequelize.sync({ alter: true })
+// создает таблицу при отсутствии
+//         await sequelize.sync()
+
+// await sequelize.sync({ force: true })   // не включать!!!!!!!!!!удаляет все!!!!! и создает новые
 
         await usServ.checkRecordForSendMail()   // запускает таймер отправки сообщения тем кто записан за 5 ч
 
@@ -58,7 +63,7 @@ start();
 //webSocketServer на порту 3500
 const WebSocket = require('ws');    //подключаем ws после установки пакетов    npm install ws
 const connectedUsers = []       //пользователи, которые подключились
-// const PORT_WS = process.env.PORT_WS_LOCAL || 3700
+// const PORT_WS = process.env.PORT_WS_LOCAL || 3700   // меняем при деплое
 const PORT_WS = process.env.PORT_WS || 3700
 const wsServer = new WebSocket.WebSocketServer({ port: PORT_WS });
 wsServer.on('connection', (socket) => {

@@ -86,6 +86,37 @@ class UserController {
     }
 
 
+    //Функция меняющая должность текущей организации
+    async changeJobTitle(req, res, next) {
+        try {
+            const {userId, idOrg, jobTitle, direction} = req.body
+            //выносим логику в сервис
+            const userJobTitle = await user_service.changeJobTitle(userId, idOrg, jobTitle, direction)
+            return res.status(200).json(userJobTitle)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
+    //Снятие с должности указанного пользователя
+    async fireFromOffice(req, res, next) {
+        try {
+            const userId = req.body.userId
+            const idOrg = req.body.orgId
+            const jobTitle = ""
+            const direction = ""
+
+            //выносим логику в сервис
+            const fireFromOrg= await user_service.changeJobTitle(userId, idOrg, jobTitle, direction)
+
+            return res.status(200).json({message: `Клиент снят с должности`})
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
     //Функция меняющая роль пользователя в бд
     async changeRole(req, res, next) {
         try {
