@@ -3,6 +3,7 @@ const user_service = require('../service/user-service')
 const {validationResult} = require('express-validator');
 const mailService = require("../service/mail-service");
 const uuid = require("uuid");
+const path = require("path");
 
 class UserController {
     async registration(req, res, next) {
@@ -196,6 +197,25 @@ class UserController {
             next(e)
         }
     }
+
+    //Функция добавления фото
+    async loadPhoto(req, res, next) {
+        try {
+            const filePhoto = req.files                   //Картинку получаем из req.files
+            let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
+            await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
+            //__dirname текущая дериктория .. выход на уровень выше ...
+
+
+            //Далее нужно в таблицу записать нужное поле  вынести в сервис
+            // User.create({idPhoto})   передаем id  по которому потом будем искать нужное фото и показывать его
+
+            return res.status(200).json(filePhoto);
+        } catch (e) {
+            next(e)
+        }
+    }
+
 
 
     //Добавление новой организации.

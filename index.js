@@ -5,6 +5,7 @@ const sequelize = require('./db')
 const usServ = require('./service/user-service')
 // const models = require('./models/models')
 const cors = require('cors')
+const fileUpload = require('express-fileupload')
 const router = require('./routes/rout_index')
 const PORT = process.env.PORT || 3200
 
@@ -15,6 +16,9 @@ const cookieParser = require('cookie-parser')
 const app = express()   // приложение
 //настройки приложения
 app.use(express.json())
+app.use(express.static(path.resolve(__dirname, 'static')))   // чтоб сервак мог показать фотки из папки статик
+//чтобы проверить что фотки раздаються    http://localhost:3000/6ded70ab-c74f-48c2-b28c-cb6296f7ede3.jpg
+app.use(fileUpload({}))   //подключили работу с файлами ... сперва установив npm i  express-fileupload
 app.use(cookieParser())
 app.use(cors(
     {
