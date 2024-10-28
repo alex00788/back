@@ -4,6 +4,8 @@ const {validationResult} = require('express-validator');
 const mailService = require("../service/mail-service");
 const uuid = require("uuid");
 const path = require("path");
+const {rm} = require("node:fs");
+let fs = require('fs');
 
 class UserController {
     async registration(req, res, next) {
@@ -199,18 +201,26 @@ class UserController {
     }
 
     //Функция добавления фото
-    async loadPhoto(req, res, next) {
+    async loadPhotoEmployee(req, res, next) {
         try {
+            const selectedUserId = req.body.userId
+            const orgId = req.body.orgId
             const filePhoto = req.files                   //Картинку получаем из req.files
             let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
             await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
             //__dirname текущая дериктория .. выход на уровень выше ...
 
+//выносим логику в сервис
+            const newPhotoEmployee = await user_service.newPhotoEmployee(idPhoto, selectedUserId, orgId)
 
-            //Далее нужно в таблицу записать нужное поле  вынести в сервис
-            // User.create({idPhoto})   передаем id  по которому потом будем искать нужное фото и показывать его
-
-            return res.status(200).json(filePhoto);
+//удаление старой фотки из папки статика
+            if (newPhotoEmployee.oldPhoto.length >= 1) {
+                fs.unlink('static/' + newPhotoEmployee.oldPhoto, err => {
+                    if(err) throw err; // не удалось удалить файл
+                    console.log('старое фото успешно удалёно');
+                });
+            }
+            return res.status(200).json(idPhoto);
         } catch (e) {
             next(e)
         }

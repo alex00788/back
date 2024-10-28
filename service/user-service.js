@@ -119,6 +119,7 @@ class UserService {
             roleSelectedOrg,
             jobTitle: '',
             direction: '',
+            photoEmployee: '',
             remainingFunds,
             timeStartRec: '15',
             timeMinutesRec: '00',
@@ -319,6 +320,7 @@ class UserService {
                 roleSelectedOrg: "ADMIN",
                 jobTitle: '',
                 direction: '',
+                photoEmployee: '',
                 remainingFunds: '-',
                 timeStartRecord: '12',
                 timeMinutesRec: '00',
@@ -353,6 +355,7 @@ class UserService {
             roleSelectedOrg: "ADMIN",
             jobTitle: '',
             direction: '',
+            photoEmployee: '',
             remainingFunds: '-',
             timeStartRecord: '12',
             timeMinutesRec: '00',
@@ -384,6 +387,7 @@ class UserService {
             roleSelectedOrg: newSettings.roleSelectedOrg,
             jobTitle: '',
             direction: '',
+            photoEmployee: '',
             remainingFunds: newSettings.remainingFunds,
             timeStartRec: newSettings.timeStartRec,
             timeMinutesRec: newSettings.timeMinutesRec,
@@ -397,6 +401,17 @@ class UserService {
         //перезапишем строку в бд
         const saveSit = await DataUserAboutOrg.create(newSit)
         return newSit
+    }
+
+
+    async newPhotoEmployee(idPhoto, userId, idOrg) {
+        const usersOrg = await DataUserAboutOrg.findAll({where: {idOrg}})
+        const user = usersOrg.find(us=> us.dataValues.userId === userId)
+        const oldPhoto = user.dataValues.photoEmployee
+        const changePhoto = await DataUserAboutOrg.findOne({where: {idRec: user.dataValues.idRec}})
+        changePhoto.photoEmployee = idPhoto
+        await changePhoto.save({fields: ['photoEmployee']})
+        return {oldPhoto, idPhoto}
     }
 
 
@@ -977,6 +992,7 @@ class UserService {
                 roleSelectedOrg: 'USER',
                 jobTitle: '',
                 direction: '',
+                photoEmployee: '',
                 remainingFunds: '0',
                 timeStartRec: dataSettings.timeStartRec,
                 timeMinutesRec: dataSettings.timeMinutesRec,
@@ -1000,6 +1016,7 @@ class UserService {
                     role: i.roleSelectedOrg,
                     jobTitle: i.jobTitle,
                     direction: i.direction,
+                    photoEmployee: i. photoEmployee,
                     sectionOrOrganization: i.sectionOrOrganization,
                     timeStartRec: i.timeStartRec,
                     timeMinutesRec: i.timeMinutesRec,
