@@ -92,9 +92,9 @@ class UserController {
     //Функция меняющая должность текущей организации
     async changeJobTitle(req, res, next) {
         try {
-            const {userId, idOrg, jobTitle, direction} = req.body
+            const {userId, idOrg, jobTitle, direction, photoEmployee} = req.body
             //выносим логику в сервис
-            const userJobTitle = await user_service.changeJobTitle(userId, idOrg, jobTitle, direction)
+            const userJobTitle = await user_service.changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee)
             return res.status(200).json(userJobTitle)
         } catch (e) {
             next(e)
@@ -109,10 +109,19 @@ class UserController {
             const idOrg = req.body.orgId
             const jobTitle = ""
             const direction = ""
+            const photoEmployee = ""
+
+//удаление фото из папки статика на сервере
+            const dataEmployeeAboutPhoto = await user_service.getPhotoForRemove(userId, idOrg)
+            if (dataEmployeeAboutPhoto && dataEmployeeAboutPhoto.length >= 1) {
+                fs.unlink('static/' + dataEmployeeAboutPhoto, err => {
+                    if(err) throw err; // не удалось удалить файл
+                    console.log('старое фото успешно удалёно');
+                });
+            }
 
             //выносим логику в сервис
-            const fireFromOrg= await user_service.changeJobTitle(userId, idOrg, jobTitle, direction)
-
+            const fireFromOrg= await user_service.changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee)
             return res.status(200).json({message: `Клиент снят с должности`})
         } catch (e) {
             next(e)

@@ -415,6 +415,12 @@ class UserService {
     }
 
 
+    async getPhotoForRemove (userId, idOrg) {
+        const usersOrg = await DataUserAboutOrg.findAll({where: {idOrg}})
+        const user = usersOrg.find(us=> us.dataValues.userId === userId)
+        return user.dataValues.photoEmployee
+    }
+
     // Функция, берет данные о записанных клиентах выбранной орг
     async getAllEntriesOrg(dataSet) {
         dataSet.orgId = typeof dataSet.orgId === "number"? JSON.stringify(dataSet.orgId) : dataSet.orgId
@@ -1120,16 +1126,23 @@ class UserService {
     }
 
  //функция, которая делает из клиента сотрудника перезаписывает в базе данных
-    async changeJobTitle(userId, idOrg, jobTitle, direction) {
+    async changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee) {
+        console.log('1', photoEmployee)
         const userIdAndJobTitle = await DataUserAboutOrg.findAll({where: {userId}})  //ищем все орг пользователя по id
+        console.log('2', photoEmployee)
         const res = [];
+        console.log('3', photoEmployee)
         userIdAndJobTitle.forEach(el=> res.push(el.dataValues))
         const userOrgData = res.find(currOrg => currOrg.idOrg === idOrg )
+       console.log('4', photoEmployee)
         const requiredField = await DataUserAboutOrg.findOne({where: {idRec:userOrgData.idRec}})
         requiredField.jobTitle = jobTitle
         await requiredField.save({fields: ['jobTitle']})
         requiredField.direction = direction
         await requiredField.save({fields: ['direction']})
+        console.log('1139', photoEmployee)
+        requiredField.photoEmployee = photoEmployee
+        await requiredField.save({fields: ['photoEmployee']})
         return  new UserDtoJobTitle(requiredField)                                   //возвращаем нужные поля
     }
 
