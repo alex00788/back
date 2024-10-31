@@ -934,7 +934,7 @@ class UserService {
     async getAllOrg() {
         const allOrg = await Organization.findAll()
         return allOrg.map((el) => {
-            return {name: el.nameOrg, id: el.idOrg}
+            return {name: el.nameOrg, id: el.idOrg, photoOrg: el.photoOrg}
         })
     }
 
@@ -971,7 +971,7 @@ class UserService {
     }
 
 
-    //функция, которая будет возвращать роли админ, пользователей организации админом которой он являеться
+    //функция, возвращает данные о пользователях организации
     async getAllUsersOrganization(currentOrgId, currentUserId) {
         //нахожу все записи текущей организации, чтоб понять кто админ и взять его настройки
         const findDataSettings = await DataUserAboutOrg.findAll({where: {idOrg: currentOrgId}})
