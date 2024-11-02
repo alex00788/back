@@ -25,6 +25,7 @@ router.get('/auth', authMiddleware, userController.check)  // тут Middleware 
 
 router.post('/addEntry', userController.addEntry)
 router.post('/loadPhotoEmployee', userController.loadPhotoEmployee)
+router.post('/loadPhotoLabelOrg', userController.loadPhotoLabelOrg)
 router.post('/changeWorkStatus', userController.changeWorkStatus)
 router.post('/setSettings', userController.setSettings)
 router.post('/addOrg', userController.addOrg)

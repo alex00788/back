@@ -414,6 +414,14 @@ class UserService {
         return {oldPhoto, idPhoto}
     }
 
+    async newPhotoOrg(idPhoto, idOrg) {
+        const org = await Organization.findOne({where: {idOrg}})
+        const oldPhoto = org.dataValues.photoOrg
+        org.photoOrg = idPhoto
+        await org.save({fields: ['photoOrg']})
+        return {oldPhoto, idPhoto}
+    }
+
 
     async getPhotoForRemove (userId, idOrg) {
         const usersOrg = await DataUserAboutOrg.findAll({where: {idOrg}})

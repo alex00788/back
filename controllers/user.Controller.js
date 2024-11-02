@@ -237,6 +237,33 @@ class UserController {
 
 
 
+    //Функция добавления фото организации
+    async loadPhotoLabelOrg(req, res, next) {
+        try {
+            const orgId = req.body.orgId
+            const filePhoto = req.files                   //Картинку получаем из req.files
+            let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
+            await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
+            //__dirname текущая дериктория .. выход на уровень выше ...
+
+//выносим логику в сервис
+            const newPhotoOrg = await user_service.newPhotoOrg(idPhoto, orgId)
+
+//удаление старой фотки из папки статика
+            if (newPhotoOrg.oldPhoto.length >= 1) {
+                fs.unlink('static/' + newPhotoOrg.oldPhoto, err => {
+                    if(err) throw err; // не удалось удалить файл
+                    console.log('старое фото успешно удалёно');
+                });
+            }
+            return res.status(200).json(idPhoto);
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
+
     //Добавление новой организации.
     async addOrg(req, res, next) {
         try {
