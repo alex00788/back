@@ -980,28 +980,33 @@ class UserService {
 
 
     //функция, возвращает данные о пользователях организации
-    async getAllUsersOrganization(currentOrgId, currentUserId) {
+    async getAllUsersOrganization(currentOrgId, currentUserId, employee, clickedByAdmin ) {
         //нахожу все записи текущей организации, чтоб понять кто админ и взять его настройки
         const findDataSettings = await DataUserAboutOrg.findAll({where: {idOrg: currentOrgId}})
         const dataSettingsAdmin = []
         findDataSettings.forEach(el=> dataSettingsAdmin.push(el.dataValues))
-        const dataSettings = dataSettingsAdmin.find(el=> el.roleSelectedOrg === 'ADMIN')
+        //если employee, то ищем данные сотрудника, чтоб взять его настройки
+        const dataSettings = employee?
+            dataSettingsAdmin.find(el=> el.roleSelectedOrg === 'EMPLOYEE') :
+            dataSettingsAdmin.find(el=> el.roleSelectedOrg === 'ADMIN');
 
-        //преобразую чтоб проверить есть ли в таблице данных организаций данные о тек пользователе или он входит первый раз...
+
+        console.log('9!!!', dataSettings?.idOrg)
+        //проверка есть ли данные о пользоват в табл
         const firstEnterOrg = dataSettingsAdmin.map(i=>i.userId)
         // если пользователь переключился на эту организацию в первый раз добавим данные о нем в таблицу
         if (!firstEnterOrg.includes(currentUserId)) {
-            //получаем текущего польз для получения имени фамилии и др данных из таблицы всех пользователей
             const currentUser = await User.findOne({where: {id: currentUserId}})
-            //получаем имя выбранной организац
-            const currentOrg = await Organization.findOne({where: {idOrg: currentOrgId}})
-            const nameOrg = currentOrg.dataValues.nameOrg
+            const currentOrg = await Organization.findOne({where: {idOrg: currentOrgId}});
+            const nameOrg = employee?
+                dataSettings?.sectionOrOrganization :
+                currentOrg.dataValues.nameOrg;
 
             const dataUsersAboutOrg = await DataUserAboutOrg.create({
                 nameUser: currentUser.nameUser,
                 surnameUser: currentUser.surnameUser,
                 userId: currentUserId,
-                idOrg: currentOrgId,
+                idOrg: employee? dataSettings?.idOrg : currentOrgId,
                 sectionOrOrganization: nameOrg,
                 roleSelectedOrg: 'USER',
                 jobTitle: '',
@@ -1016,7 +1021,8 @@ class UserService {
                 phoneOrg: dataSettings.phoneOrg
             })
         }
-        const dataRemainingFundsAndRoleSelectedOrg = await DataUserAboutOrg.findAll({where: {idOrg: currentOrgId}})
+        const dataRemainingFundsAndRoleSelectedOrg =
+            await DataUserAboutOrg.findAll({where: {idOrg: employee? dataSettings.idOrg : currentOrgId}})
         return dataRemainingFundsAndRoleSelectedOrg
             .map(i=> {
                 return{
@@ -1038,7 +1044,9 @@ class UserService {
                     created: moment(i.createdAt),
                     maxClients: i.maxClients,
                     location: i.location,
-                    phoneOrg: i.phoneOrg
+                    phoneOrg: i.phoneOrg,
+                    openEmployee: employee,
+                    clickedByAdmin
                 }
             })
     }
@@ -1145,8 +1153,47 @@ class UserService {
         await requiredField.save({fields: ['direction']})
         requiredField.photoEmployee = photoEmployee
         await requiredField.save({fields: ['photoEmployee']})
+        await this.createDBFieldEmployeeForUserSelectedOrg(requiredField)
         return  new UserDtoJobTitle(requiredField)                                   //возвращаем нужные поля
     }
+
+
+    async createDBFieldEmployeeForUserSelectedOrg(userEmployee) {
+        const alreadyExists = await DataUserAboutOrg.findOne({where: {idOrg: JSON.stringify(userEmployee.idRec)}})
+        const alreadyExistsAll = await DataUserAboutOrg.findAll({where: ({idOrg: JSON.stringify(userEmployee.idRec)})})
+        const employeeOrg = alreadyExistsAll.find(us => us.roleSelectedOrg === 'EMPLOYEE')
+        const nameForUserEmployeeOrg = userEmployee.jobTitle +' в ' + userEmployee.sectionOrOrganization
+
+        if (employeeOrg) {  // если админ есть перезаписываем его должность
+                const changeField = await DataUserAboutOrg.findOne({where: {idRec: employeeOrg.idRec}})
+                changeField.sectionOrOrganization = nameForUserEmployeeOrg;
+                changeField.save({fields: ['sectionOrOrganization']})
+            }
+
+
+        if (userEmployee.jobTitle.length >= 1 && !alreadyExists) {
+                const dataUsersEmployee = await DataUserAboutOrg.create({
+                    nameUser: userEmployee.nameUser,
+                    surnameUser: userEmployee.surnameUser,
+                    userId: userEmployee.userId,
+                    idOrg: userEmployee.idRec,  //берем  idRec чтоб задать id для организации в которой стал сотрудником
+                    sectionOrOrganization: nameForUserEmployeeOrg, //задаем исходя из направления и должности
+                    roleSelectedOrg: 'EMPLOYEE',
+                    jobTitle: '',
+                    direction: '',
+                    photoEmployee: '',
+                    remainingFunds: '0',
+                    timeStartRec: '15',
+                    timeMinutesRec: '00',
+                    timeLastRec: '14',
+                    maxClients: 0,
+                    timeUntilBlock: '12',
+                    location: 'Задать в настройках',
+                    phoneOrg: 'Задать в настройках'
+                })
+        }
+    }
+
 
 
     async renameAllRecDataUserAboutOrg (userId, newName, newSurname, idRec) {

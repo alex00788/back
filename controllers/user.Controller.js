@@ -476,8 +476,10 @@ class UserController {
         try {
             const idOrg = req.query.idOrg
             const userId = req.query.userId
+            const employee = JSON.parse(req.query.employee)
+            const clickedByAdmin = JSON.parse(req.query.clickedByAdmin)
             //выносим логику в сервис
-            const allUsersOrganization = await user_service.getAllUsersOrganization(idOrg, userId)
+            const allUsersOrganization = await user_service.getAllUsersOrganization(idOrg, userId, employee, clickedByAdmin)
             return res.status(200).json(allUsersOrganization)
         } catch (e) {
             next(e)
