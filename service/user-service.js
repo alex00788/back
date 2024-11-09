@@ -989,9 +989,6 @@ class UserService {
         const dataSettings = employee?
             dataSettingsAdmin.find(el=> el.roleSelectedOrg === 'EMPLOYEE') :
             dataSettingsAdmin.find(el=> el.roleSelectedOrg === 'ADMIN');
-
-
-        console.log('9!!!', dataSettings?.idOrg)
         //проверка есть ли данные о пользоват в табл
         const firstEnterOrg = dataSettingsAdmin.map(i=>i.userId)
         // если пользователь переключился на эту организацию в первый раз добавим данные о нем в таблицу
@@ -1021,8 +1018,17 @@ class UserService {
                 phoneOrg: dataSettings.phoneOrg
             })
         }
+        console.log('1 currentOrgId', currentOrgId)
+        console.log('2 currentUserId', currentUserId)
+        console.log('3 employee', employee)
+        console.log('4 clickedByAdmin', clickedByAdmin)
+        console.log('5 firstEnterOrg', firstEnterOrg)
+        console.log('6', firstEnterOrg.includes(currentUserId))
+        console.log('7', dataSettings?.idOrg, typeof dataSettings?.idOrg)
+        const idOrg = employee && dataSettings?.idOrg? dataSettings?.idOrg : currentOrgId;
+        console.log('8', idOrg)
         const dataRemainingFundsAndRoleSelectedOrg =
-            await DataUserAboutOrg.findAll({where: {idOrg: employee? dataSettings.idOrg : currentOrgId}})
+            await DataUserAboutOrg.findAll({where: {idOrg}})
         return dataRemainingFundsAndRoleSelectedOrg
             .map(i=> {
                 return{
