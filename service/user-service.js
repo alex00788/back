@@ -1174,6 +1174,12 @@ class UserService {
                 const changeField = await DataUserAboutOrg.findOne({where: {idRec: employeeOrg.idRec}})
                 changeField.sectionOrOrganization = nameForUserEmployeeOrg;
                 changeField.save({fields: ['sectionOrOrganization']})
+
+            // перезаписываем название орг у всех пользователей этой орг
+            const changeJobTitleAllFieldOrg = await DataUserAboutOrg.findAll({where: {idOrg: employeeOrg.idOrg}})
+            changeJobTitleAllFieldOrg.forEach(el=> {
+                this.changingNameOrgWhenAppointingEmployee(nameForUserEmployeeOrg, el.dataValues.idRec)
+            })
             }
 
 
@@ -1200,7 +1206,11 @@ class UserService {
         }
     }
 
-
+    async changingNameOrgWhenAppointingEmployee(newNameOrg, idRec) {
+        const changeThisUs =  await DataUserAboutOrg.findOne({where: {idRec}})
+        changeThisUs.sectionOrOrganization = newNameOrg;
+        changeThisUs.save({fields: ['sectionOrOrganization']})
+    }
 
     async renameAllRecDataUserAboutOrg (userId, newName, newSurname, idRec) {
         const ownRowTableDataUserAboutOrg = await DataUserAboutOrg.findOne({where: {idRec}})
