@@ -1018,15 +1018,7 @@ class UserService {
                 phoneOrg: dataSettings.phoneOrg
             })
         }
-        console.log('1 currentOrgId', currentOrgId)
-        console.log('2 currentUserId', currentUserId)
-        console.log('3 employee', employee)
-        console.log('4 clickedByAdmin', clickedByAdmin)
-        console.log('5 firstEnterOrg', firstEnterOrg)
-        console.log('6', firstEnterOrg.includes(currentUserId))
-        console.log('7', dataSettings?.idOrg, typeof dataSettings?.idOrg)
         const idOrg = employee && dataSettings?.idOrg? dataSettings?.idOrg : currentOrgId;
-        console.log('8', idOrg)
         const dataRemainingFundsAndRoleSelectedOrg =
             await DataUserAboutOrg.findAll({where: {idOrg}})
         return dataRemainingFundsAndRoleSelectedOrg
