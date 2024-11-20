@@ -177,14 +177,19 @@ class UserController {
             }
 
 
-            if (!data.emailAdmin) {
+            if (!data.emailAdmin && newEntry.openEmployeeForRec) {
                 return next(ApiError.badRequest(`Администратор Организации еще не зарегистрирован`));
             }
 
-            if (userSignedHimself) {
+            if (userSignedHimself && !newEntry.openEmployeeForRec) {
                 //разблокировать когда все почты будут настоящими
                 //тока если пользователь сам записался !!! отправляем письмо Админу
                 await mailService.notificationOfAnEntry(data.emailAdmin, newEntry.user,newEntry.sectionOrOrganization, newEntry.date, newEntry.time + ': 00')
+            }
+            if (userSignedHimself && newEntry.openEmployeeForRec) {
+                // тогда отправляем письмо сначала админу потом сотруднику
+                await mailService.notificationOfAnEntry(data.emailAdmin, newEntry.user,newEntry.sectionOrOrganization, newEntry.date, newEntry.time + ': 00')
+                await mailService.notificationOfAnEntry(data.mailEmployeeOrg, newEntry.user,newEntry.sectionOrOrganization, newEntry.date, newEntry.time + ': 00')
             }
 
             const userData = data.userData
@@ -510,17 +515,28 @@ class UserController {
             const orgId = req.params.orgId
             const userCancelHimselfRec = req.params.userCancelHimselfRec
             const workStatus = req.params.workStatus === 0? 'closed' : 'open'
-        //выносим логику в сервис
+            const idOrgWhereEmployeeWorks = await user_service.getIdOrgWhereEmployeeWorks(orgId)
             const dataAboutDeleteRec = await user_service.dataAboutDeleteRec(deleteEntryId, workStatus)
             const emailUser = dataAboutDeleteRec.dataValues.emailUser
             const deleteUserId = await user_service.deleteEntry(deleteEntryId, restoreBalance, orgId)
-            const mailAdmin = await user_service.getMailAdminOrg(orgId)
-        //если пользователь сам отменил запись...отправим письмо админу что отписался...
+            const mailAdmin = idOrgWhereEmployeeWorks?
+                await user_service.getMailAdminOrg(idOrgWhereEmployeeWorks):
+                await user_service.getMailAdminOrg(orgId)
+            const mailEmployeeOrg = idOrgWhereEmployeeWorks?
+                await user_service.getMailEmployeeOrg(orgId) : null;
+//если пользователь сам отменил запись...отправим письмо админу, что отписался...
             if (userCancelHimselfRec == 1) {           // тут при отмене записи клиентом сообщаем админу об отмене
                 //разблокировать когда все почты будут настоящими
-                await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
-                    dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
-        //иначе если админ удалил клиента то письмо клиенту об отмене
+                if (idOrgWhereEmployeeWorks) {
+                    await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
+                        dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
+                    await mailService.clientCanceledRecording(mailEmployeeOrg, dataAboutDeleteRec.nameUser,
+                        dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
+                } else {
+                    await mailService.clientCanceledRecording(mailAdmin, dataAboutDeleteRec.nameUser,
+                        dataAboutDeleteRec.sectionOrOrganization, dataAboutDeleteRec.date, dataAboutDeleteRec.time)
+                }
+//иначе если админ удалил клиента то письмо клиенту об отмене
             } else {
                 //разблокировать когда все почты будут настоящими  // тут при отмене записи админом сообщаем пользователю об отмене
                 await mailService.adminCanceledRecording(emailUser, dataAboutDeleteRec.nameUser,
@@ -557,8 +573,6 @@ class UserController {
         try {
             //из куки вытаскиваем рефреш токен                    почему то нету его там
             const {refreshToken} = req.cookies;
-            // console.log('43refreshToken', req)
-            // console.log('44refreshToken', refreshToken)
 
             //повторяем логику логина   генерируем - установим в куки - и вернем на клиент
             const userData = await user_service.refresh(refreshToken)   // тока  передаем refreshToken  и метод меняем
@@ -575,7 +589,6 @@ class UserController {
         try {
             //из куки вытаскиваем рефреш токен   ... и выносим логику в сервис
             const {refreshToken} = req.cookies;
-            console.log('43', req.cookies)
 
             //идем в сервис передаем туда токен  там метод который идет в токен сервис и удаляет из бд токен
             // const token = await user_service.logout(refreshToken)

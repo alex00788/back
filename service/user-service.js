@@ -383,8 +383,8 @@ class UserService {
             surnameUser: newSettings.surnameUser,
             userId: newSettings.userId,
             idOrg: newSettings.orgId,
-            sectionOrOrganization: newSettings.nameOrg,
-            roleSelectedOrg: newSettings.roleSelectedOrg,
+            sectionOrOrganization: newSettings.openEmployee? currentOrg.dataValues.sectionOrOrganization : newSettings.nameOrg,
+            roleSelectedOrg: newSettings.openEmployee? currentOrg.dataValues.roleSelectedOrg : newSettings.roleSelectedOrg,
             jobTitle: '',
             direction: '',
             photoEmployee: '',
@@ -540,6 +540,8 @@ class UserService {
         const removalProcess = false;
         const btnClicked = false;
         const recAllowed = newEntry.recAllowed;
+        const openEmployeeForRec = newEntry.openEmployeeForRec;
+        const orgIdAdminForEmployee = newEntry.orgIdAdminForEmployee;
 
         const userAlreadyRecorded = await this.checkingEntryInAnotherPlace(date, time, userId)
         if (userAlreadyRecorded) {
@@ -561,9 +563,17 @@ class UserService {
             date, dateYear, dateMonth, dateNum, time, nameUser, workStatus, userId, remainingFunds, sectionOrOrganization, orgId
         })
         await this.rmPlug(date, time)
-        const mailAdminOrg = await this.getMailAdminOrg(orgId)
         const userData = await TableOfRecords.findAll({where: {date}})
-        return {userData, emailAdmin: mailAdminOrg}
+
+
+        if (!openEmployeeForRec) {
+            const mailAdminOrg = await this.getMailAdminOrg(orgId)
+            return {userData, emailAdmin: mailAdminOrg}
+        } else {
+            const mailAdminOrg = await this.getMailAdminOrg(orgIdAdminForEmployee) // id орг в котор работает сотрудник почта админа
+            const mailEmployeeOrg = await this.getMailEmployeeOrg(orgId)
+            return {userData, emailAdmin: mailAdminOrg, mailEmployeeOrg}
+        }
     }
 
 
@@ -688,9 +698,23 @@ class UserService {
     }
 
 
+
+    //функция, которая ищет в какой компании работает сотрудник и берет ее idOrg
+    async getIdOrgWhereEmployeeWorks(idOrgEmployee) {
+        const allUsersOrgEmployee = await DataUserAboutOrg.findAll({where: {idOrg: idOrgEmployee}})
+        const dataAboutEmployee = allUsersOrgEmployee.find(el=> el.dataValues.roleSelectedOrg === 'EMPLOYEE')
+        if (dataAboutEmployee) {
+            const idOrgWhereEmployeeWorks = await DataUserAboutOrg.findOne({where: {idRec: dataAboutEmployee.dataValues.idOrg}})
+          return  idOrgWhereEmployeeWorks.dataValues.idOrg
+       } else {
+            return null;
+        }
+    }
+
+
     //функция, которая достает почту админа организации по idOrg
     async getMailAdminOrg(orgId) {
-        // ищем админа организации чтоб отправить ему письмо что к нему записались
+        // ищем админа организации, чтоб отправить ему письмо, что к нему записались
         const dataSelectedOrg = await DataUserAboutOrg.findAll({where: {idOrg: JSON.stringify(+orgId)}})
         dataSelectedOrg.map(el=> el.dataValues)
         const userIdAdminOrg = dataSelectedOrg
@@ -704,6 +728,24 @@ class UserService {
         const mailAdminOrg = await User.findOne({where: {id: JSON.stringify(+userIdAdminOrg)}})
         return mailAdminOrg.email
     }
+
+    //функция, которая достает почту сотрудника организации по idOrg
+    async getMailEmployeeOrg(orgId) {
+        // ищем сотрудника организации, чтоб отправить ему письмо, что к нему записались
+        const dataSelectedOrg = await DataUserAboutOrg.findAll({where: {idOrg: JSON.stringify(+orgId)}})
+        dataSelectedOrg.map(el=> el.dataValues)
+        const userIdEmployeeOrg = dataSelectedOrg
+            .map(el=> el.dataValues)
+            .find(us => us.roleSelectedOrg === 'EMPLOYEE')
+            .userId
+        if (userIdEmployeeOrg === '-') {
+            return null
+        }
+        // ищем почту админа организации в таблице пользователей
+        const mailAdminOrg = await User.findOne({where: {id: JSON.stringify(+userIdEmployeeOrg)}})
+        return mailAdminOrg.email
+    }
+
 
 
     async deleteEntry(idRec, userId, idOrg) {
@@ -799,8 +841,8 @@ class UserService {
             .filter((i)=> i.dateMonth === month)
             .forEach((el)=> {
                 const currentSet = adminSettings.find(settings=> settings.idOrg === el.orgId)
-                el.location = currentSet.location
-                el.phoneOrg = currentSet.phoneOrg
+                el.location = currentSet?.location
+                el.phoneOrg = currentSet?.phoneOrg
                 res.push(el)
             })
         return res
@@ -1160,7 +1202,7 @@ class UserService {
         const alreadyExists = await DataUserAboutOrg.findOne({where: {idOrg: JSON.stringify(userEmployee.idRec)}})
         const alreadyExistsAll = await DataUserAboutOrg.findAll({where: ({idOrg: JSON.stringify(userEmployee.idRec)})})
         const employeeOrg = alreadyExistsAll.find(us => us.roleSelectedOrg === 'EMPLOYEE')
-        const nameForUserEmployeeOrg = userEmployee.jobTitle +' в ' + userEmployee.sectionOrOrganization
+        const nameForUserEmployeeOrg = userEmployee.jobTitle + ' по ' + userEmployee.direction + ' в ' + userEmployee.sectionOrOrganization
 
         if (employeeOrg) {  // если админ есть перезаписываем его должность
                 const changeField = await DataUserAboutOrg.findOne({where: {idRec: employeeOrg.idRec}})
