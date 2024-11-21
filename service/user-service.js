@@ -370,7 +370,6 @@ class UserService {
     async setSettings(newSettings) {
         await this.changeWorkStatusAllEntries(newSettings)
         // найти в бд пользователя и перезаписать строку с настройками
-        // находим все записи пользователя
         const findOrgInDataUserAboutOrg = await DataUserAboutOrg.findAll({where: {userId: newSettings.userId}})
         //находим текущую организацию
         const currentOrg = findOrgInDataUserAboutOrg.find(org => org.idOrg == newSettings.orgId)
