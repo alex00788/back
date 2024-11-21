@@ -829,10 +829,16 @@ class UserService {
     async getAllEntryCurrentUser(dataYear, month, userId) {
         const res = []
         const adminSettings = []
+        const employeeSettings = []
         //берем всех админов чтоб вытащить их настройки
         const admin = await DataUserAboutOrg.findAll({where: {roleSelectedOrg: "ADMIN"}})
         admin.forEach(el=> {
             adminSettings.push(el.dataValues)
+        })
+        //берем всех сотрудников, чтоб вытащить их настройки если admin нету...
+        const employee = await DataUserAboutOrg.findAll({where: {roleSelectedOrg: "EMPLOYEE"}})
+        employee.forEach(el=> {
+            employeeSettings.push(el.dataValues)
         })
         const findAllEntryCurrentUs = await TableOfRecords.findAll({where: {userId}})
         findAllEntryCurrentUs.map((el)=> el.dataValues)
@@ -840,8 +846,9 @@ class UserService {
             .filter((i)=> i.dateMonth === month)
             .forEach((el)=> {
                 const currentSet = adminSettings.find(settings=> settings.idOrg === el.orgId)
-                el.location = currentSet?.location
-                el.phoneOrg = currentSet?.phoneOrg
+                const currentSetEmp = employeeSettings.find(settings=> settings.idOrg === el.orgId)
+                el.location = currentSet? currentSet.location : currentSetEmp.location;
+                el.phoneOrg = currentSet? currentSet.phoneOrg : currentSetEmp.phoneOrg;
                 res.push(el)
             })
         return res
@@ -1201,7 +1208,7 @@ class UserService {
         const alreadyExists = await DataUserAboutOrg.findOne({where: {idOrg: JSON.stringify(userEmployee.idRec)}})
         const alreadyExistsAll = await DataUserAboutOrg.findAll({where: ({idOrg: JSON.stringify(userEmployee.idRec)})})
         const employeeOrg = alreadyExistsAll.find(us => us.roleSelectedOrg === 'EMPLOYEE')
-        const nameForUserEmployeeOrg = userEmployee.jobTitle + ' по ' + userEmployee.direction + ' в ' + userEmployee.sectionOrOrganization
+        const nameForUserEmployeeOrg =  userEmployee.direction + ' в ' + userEmployee.sectionOrOrganization
 
         if (employeeOrg) {  // если админ есть перезаписываем его должность
                 const changeField = await DataUserAboutOrg.findOne({where: {idRec: employeeOrg.idRec}})
