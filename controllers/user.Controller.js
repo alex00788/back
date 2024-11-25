@@ -493,6 +493,20 @@ class UserController {
         }
     }
 
+    //функция вернет админу данные о направлениях пользователя в тек орг
+    async getAllDataAboutResetSelectedUser(req, res, next) {
+        try {
+            const idOrg = req.query.idOrg
+            const userId = req.query.userId
+
+            const dataAboutDirection = await user_service.getAllDataAboutResetSelectedUser(idOrg, userId)
+            return res.status(200).json(dataAboutDirection)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
 
     //Функция удалит все что связано с этой почтой из всех таблиц
     async deleteTestData(req, res, next) {

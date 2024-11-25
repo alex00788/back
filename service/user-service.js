@@ -1148,6 +1148,14 @@ class UserService {
     }
 
 
+
+    //функция, возвращает данные о Направлениях
+    async getAllDataAboutResetSelectedUser(currentOrgId, currentUserId ) {
+        const findDataAllDirection = await DataUserAboutOrg.findAll({where: {idOrgAdmin: currentOrgId}})
+        return findDataAllDirection.filter((el)=> el.dataValues.userId === currentUserId);
+    }
+
+
     async refresh(refreshToken) {
         //если по какойто причине токена нету  кидаем ошибку
         if (!refreshToken) {
