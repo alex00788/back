@@ -94,6 +94,7 @@ class UserController {
         try {
             const {userId, idOrg, jobTitle, direction, photoEmployee} = req.body
             //выносим логику в сервис
+            const fireFromOfficeProcess = false
             const userJobTitle = await user_service.changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee)
             return res.status(200).json(userJobTitle)
         } catch (e) {
@@ -121,7 +122,8 @@ class UserController {
             }
 
             //выносим логику в сервис
-            const fireFromOrg= await user_service.changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee)
+            const fireFromOfficeProcess = true
+            const fireFromOrg= await user_service.changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee, fireFromOfficeProcess)
             return res.status(200).json({message: `Клиент снят с должности`})
         } catch (e) {
             next(e)

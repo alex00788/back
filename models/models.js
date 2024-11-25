@@ -8,7 +8,7 @@ const User = sequelize.define('user', {
     email: {type: DataTypes.STRING, unique: true},
     isActivated: {type: DataTypes.BOOLEAN, defaultValue: false},
     phoneNumber: {type: DataTypes.STRING, unique: true, require: true},
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
     idOrg: {type: DataTypes.STRING, require: true},
     role: {type: DataTypes.STRING, defaultValue: "USER"},
@@ -77,11 +77,12 @@ const Organization = sequelize.define('organization', {
 
 
 const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
-    idRec: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    idRec: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
     nameUser: {type: DataTypes.STRING, require: true},
     surnameUser: {type: DataTypes.STRING, require: true},
     userId: {type: DataTypes.STRING, require: true },
     idOrg: {type: DataTypes.STRING, require: true },
+    idOrgAdmin: {type: DataTypes.STRING, defaultValue: ""},
     sectionOrOrganization: {type: DataTypes.STRING, require: true},
     roleSelectedOrg: {type: DataTypes.STRING, require: true, defaultValue: "USER"},
     jobTitle: {type: DataTypes.STRING, defaultValue: ""},

@@ -115,6 +115,7 @@ class UserService {
             surnameUser,
             userId: user.id,
             idOrg,
+            idOrgAdmin: '',
             sectionOrOrganization,
             roleSelectedOrg,
             jobTitle: '',
@@ -316,6 +317,7 @@ class UserService {
                 surnameUser: userAlreadyRegInUserTable.surnameUser,
                 userId: userAlreadyRegInUserTable.id,
                 idOrg: idOrg.dataValues.idOrg,
+                idOrgAdmin: '',
                 sectionOrOrganization: nameOrg,
                 roleSelectedOrg: "ADMIN",
                 jobTitle: '',
@@ -351,6 +353,7 @@ class UserService {
             surnameUser: 'Организация',
             userId: '-',
             idOrg: idOrg,
+            idOrgAdmin: '',
             sectionOrOrganization: nameOrg,
             roleSelectedOrg: "ADMIN",
             jobTitle: '',
@@ -382,6 +385,7 @@ class UserService {
             surnameUser: newSettings.surnameUser,
             userId: newSettings.userId,
             idOrg: newSettings.orgId,
+            idOrgAdmin: '',
             sectionOrOrganization: newSettings.openEmployee? currentOrg.dataValues.sectionOrOrganization : newSettings.nameOrg,
             roleSelectedOrg: newSettings.openEmployee? currentOrg.dataValues.roleSelectedOrg : newSettings.roleSelectedOrg,
             jobTitle: '',
@@ -1046,12 +1050,14 @@ class UserService {
             const nameOrg = employee?
                 dataSettings?.sectionOrOrganization :
                 currentOrg.dataValues.nameOrg;
-
+            const idOrgAdminA = await DataUserAboutOrg.findOne({where: {idRec: currentOrgId}})
+            const idOrgAdmin = employee? idOrgAdminA.idOrg : ''
             const dataUsersAboutOrg = await DataUserAboutOrg.create({
                 nameUser: currentUser.nameUser,
                 surnameUser: currentUser.surnameUser,
                 userId: currentUserId,
                 idOrg: employee? dataSettings?.idOrg : currentOrgId,
+                idOrgAdmin,
                 sectionOrOrganization: nameOrg,
                 roleSelectedOrg: 'USER',
                 jobTitle: '',
@@ -1187,7 +1193,7 @@ class UserService {
     }
 
  //функция, которая делает из клиента сотрудника перезаписывает в базе данных
-    async changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee) {
+    async changeJobTitle(userId, idOrg, jobTitle, direction, photoEmployee, fireFromOfficeProcess) {
         const userIdAndJobTitle = await DataUserAboutOrg.findAll({where: {userId}})  //ищем все орг пользователя по id
         const res = [];
         userIdAndJobTitle.forEach(el=> res.push(el.dataValues))
@@ -1195,10 +1201,12 @@ class UserService {
         const requiredField = await DataUserAboutOrg.findOne({where: {idRec:userOrgData.idRec}})
         requiredField.jobTitle = jobTitle
         await requiredField.save({fields: ['jobTitle']})
-        requiredField.direction = direction
-        await requiredField.save({fields: ['direction']})
         requiredField.photoEmployee = photoEmployee
         await requiredField.save({fields: ['photoEmployee']})
+        if (!fireFromOfficeProcess) {
+            requiredField.direction = direction
+            await requiredField.save({fields: ['direction']})
+        }
         await this.createDBFieldEmployeeForUserSelectedOrg(requiredField)
         return  new UserDtoJobTitle(requiredField)                                   //возвращаем нужные поля
     }
@@ -1229,6 +1237,7 @@ class UserService {
                     surnameUser: userEmployee.surnameUser,
                     userId: userEmployee.userId,
                     idOrg: userEmployee.idRec,  //берем  idRec чтоб задать id для организации в которой стал сотрудником
+                    idOrgAdmin: userEmployee.idOrg,
                     sectionOrOrganization: nameForUserEmployeeOrg, //задаем исходя из направления и должности
                     roleSelectedOrg: 'EMPLOYEE',
                     jobTitle: '',
