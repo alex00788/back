@@ -127,6 +127,7 @@ class UserService {
             timeLastRec: '16',
             maxClients: 3,
             timeUntilBlock: '12',
+            recordingDays: 'пн, вт, ср, чт, пт, сб, вс',
             location: 'Задать в настройках',
             phoneOrg: 'Задать в настройках'
         })
@@ -329,6 +330,7 @@ class UserService {
                 timeLastRec: '11',
                 maxClients: '3',
                 timeUntilBlock: '12',
+                recordingDays: 'пн, вт, ср, чт, пт, сб, вс',
                 location: 'Задать в настройках',
                 phoneOrg: 'Задать в настройках',
             })
@@ -365,6 +367,7 @@ class UserService {
             timeLastRec: '11',
             maxClients: '3',
             timeUntilBlock: '12',
+            recordingDays: 'пн, вт, ср, чт, пт, сб, вс',
             location: 'Задать в настройках',
             phoneOrg: 'Задать в настройках',
         }
@@ -397,6 +400,7 @@ class UserService {
             timeLastRec: newSettings.timeFinishRec,
             maxClients: newSettings.maxiPeople,
             timeUntilBlock: newSettings.timeUntilBlock,
+            recordingDays: newSettings.recordingDays,
             location: newSettings.location,
             phoneOrg: newSettings.phoneOrg,
         }
@@ -1068,6 +1072,7 @@ class UserService {
                 timeMinutesRec: dataSettings.timeMinutesRec,
                 timeLastRec: dataSettings.timeLastRec,
                 maxClients: dataSettings.maxClients,
+                recordingDays: 'пн, вт, ср, чт, пт, сб, вс',
                 location: dataSettings.location + ' ..dubl',
                 phoneOrg: dataSettings.phoneOrg
             })
@@ -1095,6 +1100,7 @@ class UserService {
                     recAllowed: i.recAllowed,
                     created: moment(i.createdAt),
                     maxClients: i.maxClients,
+                    recordingDays: i.recordingDays,
                     location: i.location,
                     phoneOrg: i.phoneOrg,
                     openEmployee: employee,
