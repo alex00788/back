@@ -67,8 +67,8 @@ start();
 //webSocketServer на порту 3500
 const WebSocket = require('ws');    //подключаем ws после установки пакетов    npm install ws
 const connectedUsers = []       //пользователи, которые подключились
-const PORT_WS = process.env.PORT_WS_LOCAL || 3700   // меняем при деплое
-// const PORT_WS = process.env.PORT_WS || 3700
+// const PORT_WS = process.env.PORT_WS_LOCAL || 3700   // меняем при деплое
+const PORT_WS = process.env.PORT_WS || 3700
 const wsServer = new WebSocket.WebSocketServer({ port: PORT_WS });
 wsServer.on('connection', (socket) => {
     //socket.send(`connected`)                          //отправляю сообщение на фронт что сойдинился
