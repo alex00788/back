@@ -95,7 +95,7 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     maxClients: {type: DataTypes.INTEGER, defaultValue: 1},
     timeUntilBlock: {type: DataTypes.INTEGER, defaultValue: 12},
     recAllowed: {type: DataTypes.BOOLEAN, defaultValue: false},
-    recordingDays: {type: DataTypes.STRING, defaultValue: "пн,вт,ср,чт,пт,сб,вс"},
+    recordingDays: {type: DataTypes.STRING, defaultValue: "пн, вт, ср, чт, пт, сб, вс"},
     location: {type: DataTypes.STRING},
     phoneOrg: {type: DataTypes.STRING},
 })
