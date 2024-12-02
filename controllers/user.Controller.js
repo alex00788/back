@@ -258,11 +258,13 @@ class UserController {
 
 //удаление старой фотки из папки статика
             if (newPhotoOrg.oldPhoto.length >= 1) {
+                console.log('261 удаление стар фото', newPhotoOrg.oldPhoto)
                 fs.unlink('static/' + newPhotoOrg.oldPhoto, err => {
                     if(err) throw err; // не удалось удалить файл
                     console.log('старое фото успешно удалёно');
                 });
             }
+            console.log('267 ответ на фронт')
             return res.status(200).json(idPhoto);
         } catch (e) {
             next(e)

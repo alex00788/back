@@ -422,6 +422,7 @@ class UserService {
     }
 
     async newPhotoOrg(idPhoto, idOrg) {
+        console.log('425 логика сервиса', idOrg, idPhoto)
         const org = await Organization.findOne({where: {idOrg}})
         const oldPhoto = org.dataValues.photoOrg
         org.photoOrg = idPhoto
