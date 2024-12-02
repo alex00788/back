@@ -64,24 +64,24 @@ const start = async () => {
 start();
 
 
-//webSocketServer на порту 3500
-const WebSocket = require('ws');    //подключаем ws после установки пакетов    npm install ws
-const connectedUsers = []       //пользователи, которые подключились
-// const PORT_WS = process.env.PORT_WS_LOCAL || 3700   // меняем при деплое
-const PORT_WS = process.env.PORT_WS || 3700
-const wsServer = new WebSocket.WebSocketServer({ port: PORT_WS });
-wsServer.on('connection', (socket) => {
-    //socket.send(`connected`)                          //отправляю сообщение на фронт что сойдинился
-    connectedUsers.push(socket)                        // добавляю в массив подключенных онлайн
-    socket.on('message', (message) => {                  //когда получу сообщение
-        console.log(`67 !!!!!!Получено сообщение: ${message}`);
-        connectedUsers.forEach(s => {                        //иду по всем кто подключен
-            s.send(JSON.stringify(`${message}`))    // говорю что данные изменились
-        })
-    });
-    socket.on('close', () => {
-        console.log('73close!!!!')
-        socket.send(`Соединение закрыто`);
-    });
-});
+// //webSocketServer на порту 3500
+// const WebSocket = require('ws');    //подключаем ws после установки пакетов    npm install ws
+// const connectedUsers = []       //пользователи, которые подключились
+// // const PORT_WS = process.env.PORT_WS_LOCAL || 3700   // меняем при деплое
+// const PORT_WS = process.env.PORT_WS || 3700
+// const wsServer = new WebSocket.WebSocketServer({ port: PORT_WS });
+// wsServer.on('connection', (socket) => {
+//     //socket.send(`connected`)                          //отправляю сообщение на фронт что сойдинился
+//     connectedUsers.push(socket)                        // добавляю в массив подключенных онлайн
+//     socket.on('message', (message) => {                  //когда получу сообщение
+//         console.log(`67 !!!!!!Получено сообщение: ${message}`);
+//         connectedUsers.forEach(s => {                        //иду по всем кто подключен
+//             s.send(JSON.stringify(`${message}`))    // говорю что данные изменились
+//         })
+//     });
+//     socket.on('close', () => {
+//         console.log('73close!!!!')
+//         socket.send(`Соединение закрыто`);
+//     });
+// });
 
