@@ -247,9 +247,11 @@ class UserController {
     //Функция добавления фото организации
     async loadPhotoLabelOrg(req, res, next) {
         try {
+            console.log('пришли на серв')
             const orgId = req.body.orgId
             const filePhoto = req.files                   //Картинку получаем из req.files
             let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
+            console.log('254')
             await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
             //__dirname текущая дериктория .. выход на уровень выше ...
 
