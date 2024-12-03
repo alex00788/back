@@ -1,7 +1,6 @@
 require('dotenv').config()
 const express = require('express')
 const path = require('path')
-bodyParser = require('body-parser')
 const sequelize = require('./db')
 const usServ = require('./service/user-service')
 // const models = require('./models/models')
@@ -21,11 +20,6 @@ app.use(express.static(path.resolve(__dirname, 'static')))   // чтоб сер�
 //чтобы проверить что фотки раздаються    http://localhost:3000/6ded70ab-c74f-48c2-b28c-cb6296f7ede3.jpg
 app.use(fileUpload({}))   //подключили работу с файлами ... сперва установив npm i  express-fileupload
 app.use(cookieParser())
-app.use(bodyParser.json({limit: '150mb'}));
-app.use(bodyParser.urlencoded({
-    limit: '150mb',
-    extended: true
-}));
 app.use(cors(
     {
     // credentials: true,
