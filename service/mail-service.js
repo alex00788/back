@@ -328,18 +328,21 @@ class MailService {
                 html:
                     `<div>
                         <p> ${nameOrg} успешно добавлено! </p>
-                        <br>
                         <p> Сохраните это письмо! </p>
-                        <br>
                         <p> Ссылка чтобы клиенты сразу попадали в вашу организацию: </p>
-                        <a style="color: #5238fd" href="записькпрофи.рф?organization=${nameOrg}&i=${idOrg}"
+                        <a style="color: #5238fd" href='https://xn--80aneajyecjh1b5f.xn--p1ai/?organization=${nameOrg}&i=${idOrg}'
                         > 
                         записькпрофи.рф?organization=${nameOrg}&i=${idOrg}
                         </a>
                         <br>
-                        <p> Добавте к себе на сайт или страницу</p>
-                        <p> Осталось зарегистрироваться выбрав свою организацию, и стать ее администратором!</p>
-                        <p> Пройдите по ссылке и нажмите войти -> зарегистрироваться</p>
+                        <p> Добавте к себе на сайт или страницу!</p>
+                         <br>
+                        <button> 
+                          <a style="color: #5238fd" href='https://xn--80aneajyecjh1b5f.xn--p1ai/?organization=${nameOrg}&i=${idOrg}'> 
+                          Осталось Перейти
+                          </a>
+                          <p> и зарегистрироваться в свою организацию, чтоб стать ее администратором.</p>
+                        </button>
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
