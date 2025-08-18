@@ -26,7 +26,7 @@ const User = sequelize.define('user', {
                                //   ref    ссылка на объект
 const Token = sequelize.define('token', {
     user: {type: DataTypes.STRING, ref: 'User' },
-    refreshToken: {type: DataTypes.STRING, require: true}
+    refreshToken: {type: DataTypes.TEXT, require: true}
 })
 
 
