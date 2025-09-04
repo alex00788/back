@@ -9,7 +9,7 @@ class TokenService {
     generateJwt = (paiload) => {     //payload, берем из токена, те данные что вшиваются в токен
                                     // SECRET_KEY_ACCESS выносим в переменную окружения...тут храним секретный ключ
 
-        const accessToken = jwt.sign(paiload, process.env.SECRET_KEY_ACCESS, {expiresIn: '5m'} )
+        const accessToken = jwt.sign(paiload, process.env.SECRET_KEY_ACCESS, {expiresIn: '30m'} )
                                                                                 //время жизни токена после которого пропадет авторизация
 
 
@@ -19,7 +19,7 @@ class TokenService {
         return {
             accessToken,
             refreshToken,
-            expiresIn: '1800'
+            expiresIn: '1800'  // 30 минут в секундах
         }
     }
 
