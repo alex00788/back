@@ -69,11 +69,13 @@ class TokenService {
     }
 
     async removeToken(refreshToken) {
-        // const tokenData = await tokenModel.deleteOne({refreshToken})   почему то не работает!!!!
+        const tokenData = await tokenModel.destroy({where: {refreshToken}})
+        return tokenData;
     }
 
     async findToken(refreshToken) {
         const tokenData = await tokenModel.findOne({refreshToken})
+        return tokenData;
     }
 
 

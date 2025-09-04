@@ -115,8 +115,21 @@ class UserController {
 //удаление фото из папки статика на сервере
             const dataEmployeeAboutPhoto = await user_service.getPhotoForRemove(userId, idOrg)
             if (dataEmployeeAboutPhoto && dataEmployeeAboutPhoto.length >= 1) {
-                fs.unlink('static/' + dataEmployeeAboutPhoto, err => {
-                    if(err) throw err; // не удалось удалить файл
+                // Безопасное удаление файла с валидацией пути
+                const safePath = path.resolve(__dirname, '..', 'static', dataEmployeeAboutPhoto);
+                const staticDir = path.resolve(__dirname, '..', 'static');
+                
+                // Проверяем, что файл находится в папке static (защита от path traversal)
+                if (!safePath.startsWith(staticDir)) {
+                    console.error('Попытка удаления файла вне папки static:', dataEmployeeAboutPhoto);
+                    return next(ApiError.badRequest('Недопустимый путь к файлу'));
+                }
+                
+                fs.unlink(safePath, err => {
+                    if(err) {
+                        console.error('Ошибка удаления файла:', err);
+                        return; // не бросаем ошибку, чтобы не прерывать выполнение
+                    }
                     console.log('старое фото успешно удалёно');
                 });
             }
@@ -222,7 +235,32 @@ class UserController {
             const selectedUserId = req.body.userId
             const orgId = req.body.orgId
             const filePhoto = req.files                   //Картинку получаем из req.files
-            let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
+            
+            // Валидация файла
+            if (!filePhoto || !filePhoto.file) {
+                return next(ApiError.badRequest('Файл не был загружен'));
+            }
+            
+            // Проверка типа файла
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(filePhoto.file.mimetype)) {
+                return next(ApiError.badRequest('Недопустимый тип файла. Разрешены только: JPEG, PNG, GIF'));
+            }
+            
+            // Проверка размера файла (максимум 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (filePhoto.file.size > maxSize) {
+                return next(ApiError.badRequest('Файл слишком большой. Максимальный размер: 5MB'));
+            }
+            
+            // Безопасное определение расширения файла
+            const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            const fileExtension = path.extname(filePhoto.file.name).toLowerCase();
+            if (!allowedExtensions.includes(fileExtension)) {
+                return next(ApiError.badRequest('Недопустимое расширение файла'));
+            }
+            
+            let idPhoto = uuid.v4() + fileExtension;      //генерим id по которому будем эту фотку искать
             await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
             //__dirname текущая дериктория .. выход на уровень выше ...
 
@@ -231,8 +269,21 @@ class UserController {
 
 //удаление старой фотки из папки статика
             if (newPhotoEmployee.oldPhoto.length >= 1) {
-                fs.unlink('static/' + newPhotoEmployee.oldPhoto, err => {
-                    if(err) throw err; // не удалось удалить файл
+                // Безопасное удаление файла с валидацией пути
+                const safePath = path.resolve(__dirname, '..', 'static', newPhotoEmployee.oldPhoto);
+                const staticDir = path.resolve(__dirname, '..', 'static');
+                
+                // Проверяем, что файл находится в папке static (защита от path traversal)
+                if (!safePath.startsWith(staticDir)) {
+                    console.error('Попытка удаления файла вне папки static:', newPhotoEmployee.oldPhoto);
+                    return next(ApiError.badRequest('Недопустимый путь к файлу'));
+                }
+                
+                fs.unlink(safePath, err => {
+                    if(err) {
+                        console.error('Ошибка удаления файла:', err);
+                        return; // не бросаем ошибку, чтобы не прерывать выполнение
+                    }
                     console.log('старое фото успешно удалёно');
                 });
             }
@@ -249,7 +300,32 @@ class UserController {
         try {
             const orgId = req.body.orgId
             const filePhoto = req.files                   //Картинку получаем из req.files
-            let idPhoto =  uuid.v4() + ".jpg"      //генерим id по которому будем эту фотку искать
+            
+            // Валидация файла
+            if (!filePhoto || !filePhoto.file) {
+                return next(ApiError.badRequest('Файл не был загружен'));
+            }
+            
+            // Проверка типа файла
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(filePhoto.file.mimetype)) {
+                return next(ApiError.badRequest('Недопустимый тип файла. Разрешены только: JPEG, PNG, GIF'));
+            }
+            
+            // Проверка размера файла (максимум 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (filePhoto.file.size > maxSize) {
+                return next(ApiError.badRequest('Файл слишком большой. Максимальный размер: 5MB'));
+            }
+            
+            // Безопасное определение расширения файла
+            const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            const fileExtension = path.extname(filePhoto.file.name).toLowerCase();
+            if (!allowedExtensions.includes(fileExtension)) {
+                return next(ApiError.badRequest('Недопустимое расширение файла'));
+            }
+            
+            let idPhoto = uuid.v4() + fileExtension;      //генерим id по которому будем эту фотку искать
             await filePhoto.file.mv(path.resolve(__dirname, '..', 'static', idPhoto))   // перемещаем фото в папку статик
             //__dirname текущая дериктория .. выход на уровень выше ...
 
@@ -258,8 +334,21 @@ class UserController {
 
 //удаление старой фотки из папки статика
             if (newPhotoOrg.oldPhoto.length >= 1) {
-                fs.unlink('static/' + newPhotoOrg.oldPhoto, err => {
-                    if(err) throw err; // не удалось удалить файл
+                // Безопасное удаление файла с валидацией пути
+                const safePath = path.resolve(__dirname, '..', 'static', newPhotoOrg.oldPhoto);
+                const staticDir = path.resolve(__dirname, '..', 'static');
+                
+                // Проверяем, что файл находится в папке static (защита от path traversal)
+                if (!safePath.startsWith(staticDir)) {
+                    console.error('Попытка удаления файла вне папки static:', newPhotoOrg.oldPhoto);
+                    return next(ApiError.badRequest('Недопустимый путь к файлу'));
+                }
+                
+                fs.unlink(safePath, err => {
+                    if(err) {
+                        console.error('Ошибка удаления файла:', err);
+                        return; // не бросаем ошибку, чтобы не прерывать выполнение
+                    }
                     console.log('старое фото успешно удалёно');
                 });
             }

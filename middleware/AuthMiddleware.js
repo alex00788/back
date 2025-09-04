@@ -9,11 +9,21 @@ module.exports = function (req, res, next) {
         //обычно токен указывается в заголовке authorization, если его нет кидаем ошибку
         const authorizationHeader = req.headers.authorization;
 
-        //из хедера выцепляем токен                                       Bearer -тип токена потом сам токен
-        const token = req.headers.authorization.split(' ')[1] // Bearer asfasnfkajsfnjk
+        // Проверяем наличие заголовка авторизации
+        if (!authorizationHeader) {
+            return next(ApiError.UnauthorizedError());
+        }
 
-        //если нет токена или зоголовка... кидаем ошибку
-        if (!token || !authorizationHeader) {
+        // Проверяем формат заголовка (должен начинаться с "Bearer ")
+        if (!authorizationHeader.startsWith('Bearer ')) {
+            return next(ApiError.UnauthorizedError());
+        }
+
+        //из хедера выцепляем токен                                       Bearer -тип токена потом сам токен
+        const token = authorizationHeader.split(' ')[1]; // Bearer asfasnfkajsfnjk
+
+        //если нет токена... кидаем ошибку
+        if (!token) {
             return next(ApiError.UnauthorizedError());
         }
 
@@ -26,13 +36,12 @@ module.exports = function (req, res, next) {
         // к реквесту добавляем  в поле юзер данные из токена он будет доступен во всех функциях
         req.user = userData
 
-
         // вызываем следущий по цепи middleware
         next()
 
-
     } catch (e) {
-        // res.status(401).json({message: "Не авторизован"})
+        // Логируем ошибку для отладки, но не возвращаем детали клиенту
+        console.error('Ошибка в AuthMiddleware:', e.message);
         return next(ApiError.UnauthorizedError());
     }
 };

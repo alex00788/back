@@ -31,8 +31,12 @@ class UserService {
         if (!email || !password) {
             throw ApiError.badRequest('Некорректный email или password')
         }
-// РОЛЬ  присваиваеться  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
-        if (email === "alex-007.88@mail.ru" && phoneNumber === '+79168402927') {
+        // РОЛЬ  присваивается  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
+        // Используем переменные окружения для безопасности
+        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "admin@example.com";
+        const mainAdminPhone = process.env.MAIN_ADMIN_PHONE || "+1234567890";
+        
+        if (email === mainAdminEmail && phoneNumber === mainAdminPhone) {
             this.role = this.mainAdminRole
         } else {
             this.role = this.userRole
@@ -1136,7 +1140,7 @@ class UserService {
         const userDto = new UserDto(user);
         const userDtoForSaveToken = new UserDtoForSaveToken(user)
 //генерим токены передавая все нужн параметры
-        const token = token_service.generateJwt({where: {...userDtoForSaveToken}})
+        const token = token_service.generateJwt({...userDtoForSaveToken})
 
 
 //сохраняем токены в бд
@@ -1169,7 +1173,7 @@ class UserService {
         }
 
         //валидируем токен  проверяем что он не подделан и  срок годности его не истек
-        const userData = token_service.validateAccessToken(refreshToken)
+        const userData = token_service.validateRefreshToken(refreshToken)
 
 
         //проверяем что токен находиться в бд
@@ -1179,12 +1183,16 @@ class UserService {
         }
 
         // вытаскиваем пользователя и обновляем данные тк инфо могла поменяться
-        const user = await User.findOrBuild(userData.id)
+        const user = await User.findByPk(userData.id)
+        if (!user) {
+            throw ApiError.UnauthorizedError();
+        }
 
         //если проверка не прошла то как при логине генерим пару токенов ...рефреш сохраняем в бд.. и возвращаем ответ
         const userDto = new UserDto(user);
-        const token = token_service.generateJwt({where: {...userDto}})
-        await token_service.saveToken(userDto.id, token.refreshToken)
+        const userDtoForSaveToken = new UserDtoForSaveToken(user);
+        const token = token_service.generateJwt({...userDtoForSaveToken})
+        await token_service.saveToken(userDtoForSaveToken.id, token.refreshToken)
         return {...token, user: userDto}
     }
 
@@ -1297,7 +1305,9 @@ class UserService {
 
     async rename(userId, newName, newSurname) {
         const user = await User.findOne({where: {id:userId}})
-        if (user.email === 'alex-007.88@mail.ru') {
+        // Используем переменные окружения для безопасности
+        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "admin@example.com";
+        if (user.email === mainAdminEmail) {
             return 'Действие Невыполнимо!!!';
         }
         user.nameUser = newName
