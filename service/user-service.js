@@ -26,10 +26,10 @@ class UserService {
     mainAdminRole = "MAIN_ADMIN"
     emailUnauthorized = [];
 
-    async registration(email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds) {
+    async registration(email, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds) {
 //если данных нет
-        if (!email || !password) {
-            throw ApiError.badRequest('Некорректный email или password')
+        if (!email) {
+            throw ApiError.badRequest('Некорректный email')
         }
         // РОЛЬ  присваивается  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
         // Используем переменные окружения для безопасности
@@ -54,8 +54,9 @@ class UserService {
         if (phoneRepeat) {
             throw ApiError.badRequest('Телефон уже зарегистрирован')
         }
-//хешируем пароль, 2ым параметром указываем сколько раз хешить
-        const hashPassword = await bcrypt.hash(password, 3)
+//генерируем случайный пароль из 4 цифр
+        const tempPassword = Math.floor(1000 + Math.random() * 9000).toString();
+        const hashPassword = await bcrypt.hash(tempPassword, 3)
 //указываем ссылку по которой пользователь будет переходить в аккаунт и подтверждать его!
         const activationLink = uuid.v4()      //  генерим ссылку  с помощью  uuid.v4()
 
@@ -79,7 +80,7 @@ class UserService {
         })
 
 // отправляем письмо для активации
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`, password)
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`, tempPassword)
         // await mailService.sendActivationMail(email, `${process.env.API_URL}`)
 
 //  чтоб убрать ненужные поля   и ее будем использовать как payload v token_service v generateJwt
@@ -87,11 +88,6 @@ class UserService {
 // также переменная чтоб клиенту вернуть нужные поля тк большое кол-во полей не сохраняет бд
         const userDto = new UserDto(user)
 
-
-        await Del.create({
-            i: userDto.id,
-            z: password
-        })
 
 //добавляем id пользователя в таблицу организации если она там есть...
         if (adminSelectedOrg) {
@@ -994,9 +990,28 @@ class UserService {
         return await User.findOne({where: {email}})
     }
 
-    async rememberPasThisUser(email) {
+
+    async generateTempPassword(email) {
         const user = await User.findOne({where: {email}})
-        return await Del.findOne({where: {i: user.dataValues.id}})
+        if (!user) {
+            throw ApiError.badRequest('Пользователь не зарегистрирован')
+        }
+        
+        //генерируем случайный пароль из 4 цифр
+        const tempPassword = Math.floor(1000 + Math.random() * 9000).toString();
+        const hashPassword = await bcrypt.hash(tempPassword, 3)
+        
+        //обновляем пароль в базе данных
+        user.password = hashPassword;
+        await user.save({fields: ['password']});
+        
+        //обновляем пароль в таблице Del
+        await Del.update(
+            { z: tempPassword },
+            { where: { i: user.id } }
+        );
+        
+        return { tempPassword };
     }
 
     async getAllOrg() {

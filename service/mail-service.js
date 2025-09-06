@@ -38,13 +38,9 @@ class MailService {
                         <br>
                     </div>
                     <div>
-                      <p *ngIf="pas"> 
-                          <strong>Логин:</strong>
-                          <span style="color: #2630f1">${emailTo}</span>
-                          <br>
-                          <strong>Пароль:</strong>
-                          <span style="color: #2630f1">${pas}</span>
-                      </p>   
+                      <p>После активации аккаунта вы сможете войти в систему используя:</p>
+                      <p><strong>Email:</strong> <span style="color: #2630f1">${emailTo}</span></p>
+                      <br>
                       <br>
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо.</p>  
                       <p> Письмо создано автоматически </p>  
@@ -120,19 +116,23 @@ class MailService {
 
 
 
-    //напоминалка пароля
-    rememberP (email, pas) {
+
+    //отправка пароля
+    sendTempPassword (email, tempPassword) {
         this.transporter.sendMail({
                 from: process.env.SMTP_USER,
                 to: email,
-                subject: 'Напоминание пароля',
+                subject: 'Пароль для входа',
                 text: '',
                 html:
                     `<div>
                         <h1> Здравствуйте ! </h1>
-                        <p> Ваш пароль: ${pas}</p>
-                        <p> Если вы не запрашивали пароль, свяжитесь с администратором!</p>
-                        <p> Созданно автоматически отвечать на это письмо не нужно!</p>
+                        <p>Пароль для входа в систему:</p>
+                        <h2 style="color: #2630f1; font-size: 24px; text-align: center; padding: 10px; border: 2px solid #2630f1; border-radius: 5px; display: inline-block;">${tempPassword}</h2>
+                        <br><br>
+                        <p><strong>Важно:</strong> Действителен только для одного входа.</p>
+                        <p> Если вы не запрашивали временный пароль, свяжитесь с администратором!</p>
+                        <p> Создано автоматически, отвечать на это письмо не нужно!</p>
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">

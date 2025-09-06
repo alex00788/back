@@ -6,7 +6,6 @@ const authMiddleware = require('../middleware/AuthMiddleware')
 
 router.post('/registration',
     body('email').isEmail(),                                 //вызываем как мидлвеер и внутри название поля которое хотим провалидировать
-    body('password').isLength({min: 3, max: 20}),     // есть много валидаторов
     body('phoneNumber').isMobilePhone(),                    // проверка тел
     userController.registration
 )
@@ -31,7 +30,7 @@ router.post('/setSettings', authMiddleware, userController.setSettings)
 router.post('/addOrg', authMiddleware, userController.addOrg)
 router.post('/addNewOrg', userController.addNewOrg)
 router.post('/resendLink', userController.resendLink)
-router.post('/rememberPas', userController.rememberPas)
+router.post('/generateTempPassword', userController.generateTempPassword)
 router.post('/sendInSupport', userController.sendInSupport)
 router.post('/clearTableRec', authMiddleware, userController.clearTableRec)
 router.post('/changeAllowed', authMiddleware, userController.changeAllowed)
@@ -46,7 +45,7 @@ router.put('/registerAgain', userController.registerAgain)
 // router.get('/getAllEntry', userController.getAllEntry)
 router.get('/getAllEntryAllUsers', authMiddleware, userController.getAllEntryAllUsers)
 router.get('/getAllEntryCurrentUser', authMiddleware, userController.getAllEntryCurrentUser)
-router.get('/getAllOrg', authMiddleware, userController.getAllOrg)
+router.get('/getAllOrg', userController.getAllOrg)
 router.get('/getAllUsers', authMiddleware, userController.getAllUsersToFillInput)
 router.get('/getPhoneClient', authMiddleware, userController.getPhoneClient)
 router.get('/getAllUsersCurrentOrganization', authMiddleware, userController.getAllUsersCurrentOrganization)

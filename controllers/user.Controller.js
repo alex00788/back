@@ -10,7 +10,7 @@ let fs = require('fs');
 class UserController {
     async registration(req, res, next) {
         try {
-            const {email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg} = req.body
+            const {email, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg} = req.body
             const errors = validationResult(req)
 
             const sendMail = await mailService.checkingMailExists(email)
@@ -19,9 +19,6 @@ class UserController {
             }
             if (errors.array()[0]?.path === "email" && errors.array()[0].msg === "Invalid value") {
                 return next(ApiError.badRequest(`некорректно введен email!`, errors.array()))
-            }
-            if (errors.array()[0]?.path === "password" && errors.array()[0].msg === "Invalid value") {
-                return next(ApiError.badRequest(`некорректно введен пароль!`, errors.array()))
             }
             if (errors.array()[0]?.path === "phoneNumber" && errors.array()[0].msg === "Invalid value") {
                 return next(ApiError.badRequest(`некорректно введен номер телефона!`, errors.array()))
@@ -32,7 +29,7 @@ class UserController {
 
 
             const remainingFunds = '0'
-            const userData = await user_service.registration(email, password, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds)
+            const userData = await user_service.registration(email, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds)
 
             // хранение рефрешТокена в куках
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 30, httpOnly: true})  //httpOnly: true, чтоб нельзя было изменить
@@ -420,16 +417,17 @@ class UserController {
     }
 
 
-    //отправка пароля на почту пользователя
-    async rememberPas(req, res, next) {
+
+    //генерация пароля для входа
+    async generateTempPassword(req, res, next) {
         try {
             const userEmail = req.body.email
             if (!userEmail) {
                 throw ApiError.badRequest('email не указан!')
             }
-            const p = await user_service.rememberPasThisUser(userEmail)
-            await mailService.rememberP(userEmail, p.z)
-            return res.status(200).json({message: ` пароль отправлен на почту ${userEmail}`})
+            const result = await user_service.generateTempPassword(userEmail)
+            await mailService.sendTempPassword(userEmail, result.tempPassword)
+            return res.status(200).json({message: `Пароль отправлен на почту ${userEmail}`})
         } catch (e) {
             next(e)
         }
