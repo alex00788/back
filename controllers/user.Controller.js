@@ -406,32 +406,73 @@ class UserController {
     async resendLink(req, res, next) {
         try {
             const userEmail = req.body.email
-            const password = req.body.password
             const userResendLink = await user_service.resendLink(userEmail)
             const activationLink = userResendLink.dataValues.activationLink
-            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`, req.body.password)
+            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`)
             return res.status(200).json({message: `ссылка отправлена на адрес ${userEmail}`})
         } catch (e) {
             next(e)
         }
     }
 
-
-
-    //генерация пароля для входа
+    //генерация временного пароля
     async generateTempPassword(req, res, next) {
         try {
             const userEmail = req.body.email
             if (!userEmail) {
                 throw ApiError.badRequest('email не указан!')
             }
-            const result = await user_service.generateTempPassword(userEmail)
-            await mailService.sendTempPassword(userEmail, result.tempPassword)
-            return res.status(200).json({message: `Пароль отправлен на почту ${userEmail}`})
+            const tempPassword = await user_service.generateTempPassword(userEmail)
+            await mailService.sendTempPassword(userEmail, tempPassword)
+            return res.status(200).json({message: `пароль отправлен на почту ${userEmail}`})
         } catch (e) {
             next(e)
         }
     }
+
+    //получение challenge для биометрической аутентификации
+    async getBiometricChallenge(req, res, next) {
+        try {
+            const userEmail = req.body.email
+            if (!userEmail) {
+                throw ApiError.badRequest('email не указан!')
+            }
+            const challenge = await user_service.getBiometricChallenge(userEmail)
+            return res.status(200).json(challenge)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    //верификация биометрической аутентификации
+    async verifyBiometricAuth(req, res, next) {
+        try {
+            const {email, credential} = req.body
+            if (!email || !credential) {
+                throw ApiError.badRequest('Недостаточно данных для верификации')
+            }
+            const result = await user_service.verifyBiometricAuth(email, credential)
+            return res.status(200).json(result)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    //регистрация биометрических данных
+    async registerBiometric(req, res, next) {
+        try {
+            const {email, credential} = req.body
+            if (!email || !credential) {
+                throw ApiError.badRequest('Недостаточно данных для регистрации')
+            }
+            const result = await user_service.registerBiometric(email, credential)
+            return res.status(200).json(result)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+
 
     //отправка сообщения о доработки функционала от пользователей мне на почту
     async sendInSupport(req, res, next) {

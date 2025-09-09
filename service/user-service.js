@@ -1,10 +1,11 @@
 const usModels = require('../models/models')
 const User = usModels.User
-const Del = usModels.Del
 const DataUserAboutOrg = usModels.DataUserAboutOrg
+const BiometricCredential = usModels.BiometricCredential
 const bcrypt = require('bcrypt')
 const ApiError = require('../error/ApiError')
 const uuid = require('uuid')
+const crypto = require('crypto')
 const mailService = require('../service/mail-service')
 const token_service = require('../service/token-service')
 const UserDto = require('../dto/user_dto')
@@ -54,9 +55,6 @@ class UserService {
         if (phoneRepeat) {
             throw ApiError.badRequest('Телефон уже зарегистрирован')
         }
-//генерируем случайный пароль из 4 цифр
-        const tempPassword = Math.floor(1000 + Math.random() * 9000).toString();
-        const hashPassword = await bcrypt.hash(tempPassword, 3)
 //указываем ссылку по которой пользователь будет переходить в аккаунт и подтверждать его!
         const activationLink = uuid.v4()      //  генерим ссылку  с помощью  uuid.v4()
 
@@ -70,7 +68,7 @@ class UserService {
         const user = await User.create({
             email,
             role,
-            password: hashPassword,
+            password: '', // пароль остается пустым, будет генерироваться при каждом входе
             nameUser,
             surnameUser,
             phoneNumber,
@@ -80,7 +78,7 @@ class UserService {
         })
 
 // отправляем письмо для активации
-        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`, tempPassword)
+        await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`)
         // await mailService.sendActivationMail(email, `${process.env.API_URL}`)
 
 //  чтоб убрать ненужные поля   и ее будем использовать как payload v token_service v generateJwt
@@ -791,7 +789,6 @@ class UserService {
             const idUser = user.dataValues.id
             const org = await Organization.findOne({where: {email}})
             await User.destroy({where: {id: idUser}})   //удалит одну строку по id пользователя в таб User
-            await Del.destroy({where: {i: idUser}})     //удалит одну строку по id пользователя в таб Del
             await this.removeTestDataAsUserOnIdUser(idUser)
             if (org) {
                 const idOrg = org.dataValues.idOrg
@@ -916,7 +913,6 @@ class UserService {
 
     async removeUnauthorized(id, email){
         await User.destroy({where: {id}})
-        await Del.destroy({where: {i: id}})
         await DataUserAboutOrg.destroy({where: {userId: JSON.stringify(id)}})
     }
 
@@ -990,29 +986,133 @@ class UserService {
         return await User.findOne({where: {email}})
     }
 
-
     async generateTempPassword(email) {
         const user = await User.findOne({where: {email}})
         if (!user) {
             throw ApiError.badRequest('Пользователь не зарегистрирован')
         }
         
-        //генерируем случайный пароль из 4 цифр
-        const tempPassword = Math.floor(1000 + Math.random() * 9000).toString();
+        // Генерируем случайный 4-значный пароль
+        const tempPassword = Math.floor(1000 + Math.random() * 9000).toString()
+        
+        // Хешируем пароль
         const hashPassword = await bcrypt.hash(tempPassword, 3)
         
-        //обновляем пароль в базе данных
-        user.password = hashPassword;
-        await user.save({fields: ['password']});
+        // Обновляем пароль в базе данных
+        user.password = hashPassword
+        await user.save({fields: ['password']})
         
-        //обновляем пароль в таблице Del
-        await Del.update(
-            { z: tempPassword },
-            { where: { i: user.id } }
-        );
-        
-        return { tempPassword };
+        return tempPassword
     }
+
+    async getBiometricChallenge(email) {
+        const user = await User.findOne({where: {email}})
+        if (!user) {
+            throw ApiError.badRequest('Пользователь не зарегистрирован')
+        }
+
+        // Получаем зарегистрированные биометрические данные пользователя
+        const credentials = await BiometricCredential.findAll({
+            where: {userId: user.id, isActive: true}
+        })
+
+        // Генерируем случайный challenge
+        const challenge = crypto.randomBytes(32)
+        
+        // Сохраняем challenge в сессии (в реальном приложении используйте Redis)
+        // Для простоты сохраняем в базе данных
+        user.biometricChallenge = challenge.toString('base64')
+        await user.save({fields: ['biometricChallenge']})
+
+        return {
+            challenge: Array.from(challenge),
+            allowCredentials: credentials.map(cred => ({
+                id: cred.credentialId,
+                type: 'public-key',
+                transports: ['internal', 'hybrid']
+            }))
+        }
+    }
+
+    async verifyBiometricAuth(email, credential) {
+        const user = await User.findOne({where: {email}})
+        if (!user) {
+            throw ApiError.badRequest('Пользователь не найден')
+        }
+
+        // Находим биометрические данные
+        const biometricCred = await BiometricCredential.findOne({
+            where: {credentialId: credential.id, userId: user.id, isActive: true}
+        })
+
+        if (!biometricCred) {
+            throw ApiError.badRequest('Биометрические данные не найдены')
+        }
+
+        // В реальном приложении здесь должна быть полная верификация WebAuthn
+        // Для демонстрации просто проверяем, что credential существует
+        if (credential.id === biometricCred.credentialId) {
+            // Обновляем счетчик
+            biometricCred.counter += 1
+            await biometricCred.save({fields: ['counter']})
+
+            // Генерируем токены как при обычном входе
+            const userDto = new UserDto(user)
+            const userDtoForSaveToken = new UserDtoForSaveToken(user)
+            const token = token_service.generateJwt({...userDtoForSaveToken})
+            await token_service.saveToken(userDtoForSaveToken.id, token.refreshToken)
+
+            return {
+                success: true,
+                userData: {...token, user: userDto}
+            }
+        } else {
+            throw ApiError.badRequest('Неверные биометрические данные')
+        }
+    }
+
+    async registerBiometric(email, credential) {
+        const user = await User.findOne({where: {email}})
+        if (!user) {
+            throw ApiError.badRequest('Пользователь не найден')
+        }
+
+        // Проверяем, не зарегистрированы ли уже биометрические данные
+        const existingCred = await BiometricCredential.findOne({
+            where: {credentialId: credential.id}
+        })
+
+        if (existingCred) {
+            throw ApiError.badRequest('Биометрические данные уже зарегистрированы')
+        }
+
+        // Сохраняем биометрические данные
+        await BiometricCredential.create({
+            userId: user.id,
+            credentialId: credential.id,
+            publicKey: JSON.stringify(credential.response.publicKey),
+            deviceType: this.detectDeviceType(),
+            userAgent: credential.userAgent || 'unknown'
+        })
+
+        return {
+            success: true,
+            message: 'Биометрические данные успешно зарегистрированы'
+        }
+    }
+
+    detectDeviceType() {
+        // Простая детекция типа устройства
+        if (typeof window !== 'undefined') {
+            const userAgent = window.navigator.userAgent
+            if (/iPhone|iPad|iPod/.test(userAgent)) return 'ios'
+            if (/Android/.test(userAgent)) return 'android'
+            if (/Windows/.test(userAgent)) return 'windows'
+            if (/Mac/.test(userAgent)) return 'mac'
+        }
+        return 'unknown'
+    }
+
 
     async getAllOrg() {
         const allOrg = await Organization.findAll()

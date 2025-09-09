@@ -17,6 +17,7 @@ const User = sequelize.define('user', {
     reasonForBlocking: {type: DataTypes.STRING, defaultValue: 'нет причин'},
     password: {type: DataTypes.STRING},
     activationLink: {type: DataTypes.STRING},
+    biometricChallenge: {type: DataTypes.TEXT},
 })
 
 //  isActivated       для подтверждения активации
@@ -100,9 +101,15 @@ const DataUserAboutOrg = sequelize.define('dataUserAboutOrg', {
     phoneOrg: {type: DataTypes.STRING},
 })
 
-const Del = sequelize.define('Del', {
-    i: {type: DataTypes.INTEGER},
-    z: {type: DataTypes.STRING,},
+const BiometricCredential = sequelize.define('biometricCredential', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+    userId: {type: DataTypes.INTEGER, require: true},
+    credentialId: {type: DataTypes.STRING, require: true, unique: true},
+    publicKey: {type: DataTypes.TEXT, require: true},
+    counter: {type: DataTypes.INTEGER, defaultValue: 0},
+    deviceType: {type: DataTypes.STRING, defaultValue: 'unknown'},
+    userAgent: {type: DataTypes.TEXT},
+    isActive: {type: DataTypes.BOOLEAN, defaultValue: true},
 })
 
 module.exports = {
@@ -111,6 +118,6 @@ module.exports = {
     TableOfRecords,
     ArchiveRecords,
     Organization,
-    Del,
-    DataUserAboutOrg
+    DataUserAboutOrg,
+    BiometricCredential
 }

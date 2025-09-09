@@ -16,7 +16,7 @@ class MailService {
         })
     }
 
-     sendActivationMail(emailTo, link, pas) {         //парам почта по котор отправляем письмо и ссылка
+     sendActivationMail(emailTo, link) {         //парам почта по котор отправляем письмо и ссылка
          if (emailTo.userEmail) {
              emailTo =  emailTo.userEmail
          }
@@ -38,10 +38,8 @@ class MailService {
                         <br>
                     </div>
                     <div>
-                      <p>После активации аккаунта вы сможете войти в систему используя:</p>
-                      <p><strong>Email:</strong> <span style="color: #2630f1">${emailTo}</span></p>
-                      <br>
-                      <br>
+                    <strong>Логин:</strong>
+                          <span style="color: #2630f1">${emailTo}</span>
                       <p> Если вы не создавали учетную запись, проигнорируйте это письмо.</p>  
                       <p> Письмо создано автоматически </p>  
                       <br> 
@@ -116,7 +114,6 @@ class MailService {
 
 
 
-
     //отправка пароля
     sendTempPassword (email, tempPassword) {
         this.transporter.sendMail({
@@ -127,11 +124,9 @@ class MailService {
                 html:
                     `<div>
                         <h1> Здравствуйте ! </h1>
-                        <p>Пароль для входа в систему:</p>
-                        <h2 style="color: #2630f1; font-size: 24px; text-align: center; padding: 10px; border: 2px solid #2630f1; border-radius: 5px; display: inline-block;">${tempPassword}</h2>
-                        <br><br>
-                        <p><strong>Важно:</strong> Действителен только для одного входа.</p>
-                        <p> Если вы не запрашивали временный пароль, свяжитесь с администратором!</p>
+                        <p> Ваш пароль для входа: <strong style="color: #2630f1; font-size: 18px;">${tempPassword}</strong></p>
+                        <p> Этот пароль действителен для одного входа в систему.</p>
+                        <p> Если вы не запрашивали пароль, свяжитесь с администратором!</p>
                         <p> Создано автоматически, отвечать на это письмо не нужно!</p>
                     </div>
                     <p> С уважением, команда 
