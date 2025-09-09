@@ -422,6 +422,13 @@ class UserController {
             if (!userEmail) {
                 throw ApiError.badRequest('email не указан!')
             }
+            
+            // Валидация формата email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(userEmail)) {
+                throw ApiError.badRequest('Неверно введен email')
+            }
+            
             const tempPassword = await user_service.generateTempPassword(userEmail)
             await mailService.sendTempPassword(userEmail, tempPassword)
             return res.status(200).json({message: `пароль отправлен на почту ${userEmail}`})
@@ -437,6 +444,13 @@ class UserController {
             if (!userEmail) {
                 throw ApiError.badRequest('email не указан!')
             }
+            
+            // Валидация формата email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(userEmail)) {
+                throw ApiError.badRequest('Неверно введен email')
+            }
+            
             const challenge = await user_service.getBiometricChallenge(userEmail)
             return res.status(200).json(challenge)
         } catch (e) {
