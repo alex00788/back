@@ -461,11 +461,11 @@ class UserController {
     //верификация биометрической аутентификации
     async verifyBiometricAuth(req, res, next) {
         try {
-            const {email, credential} = req.body
-            if (!email || !credential) {
+            const {email, credential, challengeId} = req.body
+            if (!email || !credential || !challengeId) {
                 throw ApiError.badRequest('Недостаточно данных для верификации')
             }
-            const result = await user_service.verifyBiometricAuth(email, credential)
+            const result = await user_service.verifyBiometricAuth(email, credential, challengeId, req)
             return res.status(200).json(result)
         } catch (e) {
             next(e)
@@ -475,11 +475,32 @@ class UserController {
     //регистрация биометрических данных
     async registerBiometric(req, res, next) {
         try {
-            const {email, credential} = req.body
-            if (!email || !credential) {
+            const {email, credential, challengeId} = req.body
+            if (!email || !credential || !challengeId) {
                 throw ApiError.badRequest('Недостаточно данных для регистрации')
             }
-            const result = await user_service.registerBiometric(email, credential)
+            const result = await user_service.registerBiometric(email, credential, challengeId, req)
+            return res.status(200).json(result)
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    //проверка статуса биометрических данных
+    async checkBiometricStatus(req, res, next) {
+        try {
+            const {email} = req.body
+            if (!email) {
+                throw ApiError.badRequest('Email не указан')
+            }
+            
+            // Валидация формата email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(email)) {
+                throw ApiError.badRequest('Неверно введен email')
+            }
+            
+            const result = await user_service.checkBiometricStatus(email)
             return res.status(200).json(result)
         } catch (e) {
             next(e)

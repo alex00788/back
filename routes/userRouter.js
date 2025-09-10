@@ -1,8 +1,9 @@
 const Router = require('express')
 const router = new Router()
 const userController = require('../controllers/user.Controller')
-const {body} = require('express-validator');                            //нужна для валидации тела запроса  используем в /registration
+const {body, validationResult} = require('express-validator');                            //нужна для валидации тела запроса  используем в /registration
 const authMiddleware = require('../middleware/AuthMiddleware')
+const rateLimit = require('express-rate-limit')
 
 router.post('/registration',
     body('email').isEmail(),                                 //вызываем как мидлвеер и внутри название поля которое хотим провалидировать
@@ -31,9 +32,47 @@ router.post('/addOrg', authMiddleware, userController.addOrg)
 router.post('/addNewOrg', userController.addNewOrg)
 router.post('/resendLink', userController.resendLink)
 router.post('/generateTempPassword', userController.generateTempPassword)
-router.post('/biometric/challenge', userController.getBiometricChallenge)
-router.post('/biometric/verify', userController.verifyBiometricAuth)
-router.post('/biometric/register', userController.registerBiometric)
+// Rate limiting для биометрических операций
+const biometricRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 10, // максимум 10 попыток за 15 минут
+  message: 'Слишком много попыток биометрической аутентификации. Попробуйте позже.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+// Валидация для биометрических данных
+const validateBiometricCredential = [
+  body('email').isEmail().normalizeEmail(),
+  body('credential.id').isLength({ min: 1 }),
+  body('credential.response.authenticatorData').isBase64(),
+  body('credential.response.clientDataJSON').isBase64(),
+  body('credential.response.signature').isBase64(),
+  body('challengeId').isUUID(),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+]
+
+const validateBiometricChallenge = [
+  body('email').isEmail().normalizeEmail(),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+]
+
+router.post('/biometric/challenge', biometricRateLimit, validateBiometricChallenge, userController.getBiometricChallenge)
+router.post('/biometric/verify', biometricRateLimit, validateBiometricCredential, userController.verifyBiometricAuth)
+router.post('/biometric/register', biometricRateLimit, validateBiometricCredential, userController.registerBiometric)
+router.post('/biometric/status', validateBiometricChallenge, userController.checkBiometricStatus)
 router.post('/sendInSupport', userController.sendInSupport)
 router.post('/clearTableRec', authMiddleware, userController.clearTableRec)
 router.post('/changeAllowed', authMiddleware, userController.changeAllowed)

@@ -112,6 +112,19 @@ const BiometricCredential = sequelize.define('biometricCredential', {
     isActive: {type: DataTypes.BOOLEAN, defaultValue: true},
 })
 
+const BiometricAuditLog = sequelize.define('biometricAuditLog', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, unique: true, autoIncrement: true},
+    email: {type: DataTypes.STRING, require: true},
+    userId: {type: DataTypes.INTEGER},
+    ip: {type: DataTypes.STRING, require: true},
+    userAgent: {type: DataTypes.TEXT},
+    action: {type: DataTypes.STRING, require: true}, // 'register', 'verify', 'challenge'
+    success: {type: DataTypes.BOOLEAN, require: true},
+    errorMessage: {type: DataTypes.TEXT},
+    credentialId: {type: DataTypes.STRING},
+    timestamp: {type: DataTypes.DATE, defaultValue: DataTypes.NOW},
+})
+
 module.exports = {
     User,
     Token,
@@ -119,5 +132,6 @@ module.exports = {
     ArchiveRecords,
     Organization,
     DataUserAboutOrg,
-    BiometricCredential
+    BiometricCredential,
+    BiometricAuditLog
 }

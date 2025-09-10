@@ -2,6 +2,7 @@ const usModels = require('../models/models')
 const User = usModels.User
 const DataUserAboutOrg = usModels.DataUserAboutOrg
 const BiometricCredential = usModels.BiometricCredential
+const BiometricAuditLog = usModels.BiometricAuditLog
 const bcrypt = require('bcrypt')
 const ApiError = require('../error/ApiError')
 const uuid = require('uuid')
@@ -1006,59 +1007,35 @@ class UserService {
     }
 
     async getBiometricChallenge(email) {
-        const user = await User.findOne({where: {email}})
-        if (!user) {
-            throw ApiError.badRequest('Пользователь не зарегистрирован')
-        }
-
-        // Получаем зарегистрированные биометрические данные пользователя
-        const credentials = await BiometricCredential.findAll({
-            where: {userId: user.id, isActive: true}
-        })
-
-        // Генерируем случайный challenge
-        const challenge = crypto.randomBytes(32)
-        
-        // Сохраняем challenge в сессии (в реальном приложении используйте Redis)
-        // Для простоты сохраняем в базе данных
-        user.biometricChallenge = challenge.toString('base64')
-        await user.save({fields: ['biometricChallenge']})
-
-        return {
-            challenge: Array.from(challenge),
-            allowCredentials: credentials.map(cred => ({
-                id: cred.credentialId,
-                type: 'public-key',
-                transports: ['internal', 'hybrid']
-            }))
-        }
+        const biometricService = require('./biometric-service');
+        return await biometricService.generateChallenge(email, 'verify');
     }
 
-    async verifyBiometricAuth(email, credential) {
-        const user = await User.findOne({where: {email}})
-        if (!user) {
-            throw ApiError.badRequest('Пользователь не найден')
-        }
-
-        // Находим биометрические данные
-        const biometricCred = await BiometricCredential.findOne({
-            where: {credentialId: credential.id, userId: user.id, isActive: true}
-        })
-
-        if (!biometricCred) {
-            throw ApiError.badRequest('Биометрические данные не найдены')
-        }
-
-        // В реальном приложении здесь должна быть полная верификация WebAuthn
-        // Для демонстрации просто проверяем, что credential существует
-        if (credential.id === biometricCred.credentialId) {
-            // Обновляем счетчик
-            biometricCred.counter += 1
-            await biometricCred.save({fields: ['counter']})
+    async verifyBiometricAuth(email, credential, challengeId, req) {
+        const biometricService = require('./biometric-service');
+        
+        // Проверяем rate limit
+        await biometricService.checkRateLimit(email, req.ip);
+        
+        // Выполняем верификацию
+        const result = await biometricService.verifyBiometricAuth(email, credential, challengeId, req);
+        
+        if (result.success) {
+            // Сбрасываем rate limit при успешной аутентификации
+            await biometricService.resetRateLimit(email, req.ip);
+            
+            // Получаем данные об организациях пользователя
+            const userId = result.user.id;
+            const userOrgS = await DataUserAboutOrg.findAll({where: {userId}})
+            const selectedOrg = userOrgS.find((org) => org.idOrg === result.user.idOrg)
+            
+            if (selectedOrg) {
+                result.user.remainingFunds = selectedOrg.remainingFunds;
+            }
 
             // Генерируем токены как при обычном входе
-            const userDto = new UserDto(user)
-            const userDtoForSaveToken = new UserDtoForSaveToken(user)
+            const userDto = new UserDto(result.user)
+            const userDtoForSaveToken = new UserDtoForSaveToken(result.user)
             const token = token_service.generateJwt({...userDtoForSaveToken})
             await token_service.saveToken(userDtoForSaveToken.id, token.refreshToken)
 
@@ -1066,39 +1043,19 @@ class UserService {
                 success: true,
                 userData: {...token, user: userDto}
             }
-        } else {
-            throw ApiError.badRequest('Неверные биометрические данные')
         }
+        
+        return result;
     }
 
-    async registerBiometric(email, credential) {
-        const user = await User.findOne({where: {email}})
-        if (!user) {
-            throw ApiError.badRequest('Пользователь не найден')
-        }
+    async registerBiometric(email, credential, challengeId, req) {
+        const biometricService = require('./biometric-service');
+        return await biometricService.registerBiometric(email, credential, challengeId, req);
+    }
 
-        // Проверяем, не зарегистрированы ли уже биометрические данные
-        const existingCred = await BiometricCredential.findOne({
-            where: {credentialId: credential.id}
-        })
-
-        if (existingCred) {
-            throw ApiError.badRequest('Биометрические данные уже зарегистрированы')
-        }
-
-        // Сохраняем биометрические данные
-        await BiometricCredential.create({
-            userId: user.id,
-            credentialId: credential.id,
-            publicKey: JSON.stringify(credential.response.publicKey),
-            deviceType: this.detectDeviceType(),
-            userAgent: credential.userAgent || 'unknown'
-        })
-
-        return {
-            success: true,
-            message: 'Биометрические данные успешно зарегистрированы'
-        }
+    async checkBiometricStatus(email) {
+        const biometricService = require('./biometric-service');
+        return await biometricService.checkBiometricStatus(email);
     }
 
     detectDeviceType() {
@@ -1314,6 +1271,11 @@ class UserService {
 
     async getAllUsers() {
         return await User.findAll();
+    }
+
+    // Получение пользователя по email
+    async getUserByEmail(email) {
+        return await User.findOne({ where: { email } });
     }
 
     //функция, которая переключает роль пользователя и перезаписывает в базе данных
