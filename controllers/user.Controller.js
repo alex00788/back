@@ -11,6 +11,11 @@ class UserController {
     async registration(req, res, next) {
         try {
             const {email, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg} = req.body
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (email) {
+                req.body.email = email.toLowerCase().trim();
+            }
             const errors = validationResult(req)
 
             const sendMail = await mailService.checkingMailExists(email)
@@ -406,10 +411,15 @@ class UserController {
     async resendLink(req, res, next) {
         try {
             const userEmail = req.body.email
-            const userResendLink = await user_service.resendLink(userEmail)
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (userEmail) {
+                req.body.email = userEmail.toLowerCase().trim();
+            }
+            const userResendLink = await user_service.resendLink(req.body.email)
             const activationLink = userResendLink.dataValues.activationLink
-            await mailService.sendActivationMail({userEmail}, `${process.env.API_URL}/api/user/activate/${activationLink}`)
-            return res.status(200).json({message: `ссылка отправлена на адрес ${userEmail}`})
+            await mailService.sendActivationMail({userEmail: req.body.email}, `${process.env.API_URL}/api/user/activate/${activationLink}`)
+            return res.status(200).json({message: `ссылка отправлена на адрес ${req.body.email}`})
         } catch (e) {
             next(e)
         }
@@ -419,19 +429,24 @@ class UserController {
     async generateTempPassword(req, res, next) {
         try {
             const userEmail = req.body.email
-            if (!userEmail) {
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (userEmail) {
+                req.body.email = userEmail.toLowerCase().trim();
+            }
+            if (!req.body.email) {
                 throw ApiError.badRequest('email не указан!')
             }
             
             // Валидация формата email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(userEmail)) {
+            if (!emailRegex.test(req.body.email)) {
                 throw ApiError.badRequest('Неверно введен email')
             }
             
-            const tempPassword = await user_service.generateTempPassword(userEmail)
-            await mailService.sendTempPassword(userEmail, tempPassword)
-            return res.status(200).json({message: `пароль отправлен на почту ${userEmail}`})
+            const tempPassword = await user_service.generateTempPassword(req.body.email)
+            await mailService.sendTempPassword(req.body.email, tempPassword)
+            return res.status(200).json({message: `пароль отправлен на почту ${req.body.email}`})
         } catch (e) {
             next(e)
         }
@@ -441,17 +456,22 @@ class UserController {
     async getBiometricChallenge(req, res, next) {
         try {
             const userEmail = req.body.email
-            if (!userEmail) {
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (userEmail) {
+                req.body.email = userEmail.toLowerCase().trim();
+            }
+            if (!req.body.email) {
                 throw ApiError.badRequest('email не указан!')
             }
             
             // Валидация формата email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(userEmail)) {
+            if (!emailRegex.test(req.body.email)) {
                 throw ApiError.badRequest('Неверно введен email')
             }
             
-            const challenge = await user_service.getBiometricChallenge(userEmail)
+            const challenge = await user_service.getBiometricChallenge(req.body.email)
             return res.status(200).json(challenge)
         } catch (e) {
             next(e)
@@ -490,17 +510,22 @@ class UserController {
     async checkBiometricStatus(req, res, next) {
         try {
             const {email} = req.body
-            if (!email) {
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (email) {
+                req.body.email = email.toLowerCase().trim();
+            }
+            if (!req.body.email) {
                 throw ApiError.badRequest('Email не указан')
             }
             
             // Валидация формата email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(email)) {
+            if (!emailRegex.test(req.body.email)) {
                 throw ApiError.badRequest('Неверно введен email')
             }
             
-            const result = await user_service.checkBiometricStatus(email)
+            const result = await user_service.checkBiometricStatus(req.body.email)
             return res.status(200).json(result)
         } catch (e) {
             next(e)
@@ -733,6 +758,11 @@ class UserController {
     async login(req, res, next) {
         try {
             const {email, password} = req.body
+            
+            // Нормализуем email к нижнему регистру для консистентности
+            if (email) {
+                req.body.email = email.toLowerCase().trim();
+            }
             //выносим логику в сервис
             const userData = await user_service.login(email, password)
 

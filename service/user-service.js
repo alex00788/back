@@ -33,6 +33,9 @@ class UserService {
         if (!email) {
             throw ApiError.badRequest('Некорректный email')
         }
+        
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
         // РОЛЬ  присваивается  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
         // Используем переменные окружения для безопасности
         const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "admin@example.com";
@@ -984,10 +987,14 @@ class UserService {
 
 
     async resendLink(email) {
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
         return await User.findOne({where: {email}})
     }
 
     async generateTempPassword(email) {
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
         const user = await User.findOne({where: {email}})
         if (!user) {
             throw ApiError.badRequest('Пользователь не зарегистрирован')
@@ -1007,6 +1014,8 @@ class UserService {
     }
 
     async getBiometricChallenge(email) {
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
         const biometricService = require('./biometric-service');
         return await biometricService.generateChallenge(email, 'verify');
     }
@@ -1054,6 +1063,8 @@ class UserService {
     }
 
     async checkBiometricStatus(email) {
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
         const biometricService = require('./biometric-service');
         return await biometricService.checkBiometricStatus(email);
     }
@@ -1187,6 +1198,9 @@ class UserService {
 
 
     async login(email, password) {
+        // Нормализуем email к нижнему регистру для консистентности
+        email = email.toLowerCase().trim();
+        
 //ищем user в БД  если нет то ошибку кидаем
         const user = await User.findOne({where: {email}})
         if (!user) {
