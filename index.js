@@ -53,6 +53,10 @@ const start = async () => {
 
 // await sequelize.sync({ force: true })   // не включать!!!!!!!!!!удаляет все!!!!! и создает новые
 
+        // Инициализация главного админа при первом запуске
+        const seedService = require('./service/seed-service')
+        await seedService.initializeSystem()
+
         await usServ.checkRecordForSendMail()   // запускает таймер отправки сообщения тем кто записан за 5 ч
 
         app.listen(PORT, ()=> console.log(`!!!server started on port: ${PORT}`))

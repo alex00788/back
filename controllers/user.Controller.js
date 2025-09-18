@@ -382,8 +382,10 @@ class UserController {
             //     return next(ApiError.badRequest(`Телефон  ${newOrganization.managerPhone} уже добавлен`));
             // }
 
+            // Получаем обновленную запись организации с ссылкой
+            const orgWithLink = await user_service.getOrgById(newOrgData.dataValues.idOrg);
             //отправит письмо владельцу орг о том что орг добавлена
-            await mailService.sendNotificationAboutSuccessfulAddNewOrg(newOrganization.email, newOrganization.nameOrg, newOrgData.dataValues.idOrg)
+            await mailService.sendNotificationAboutSuccessfulAddNewOrg(newOrganization.email, newOrganization.nameOrg, newOrgData.dataValues.idOrg, orgWithLink.orgLink)
 
             return res.status(200).json({message: `организация ${newOrgData.nameOrg} добавлена и сохранена в бд`, newOrgData})
         } catch (e) {
@@ -624,6 +626,20 @@ class UserController {
         try {
             const allOrg = await user_service.getAllOrg()
             return res.status(200).json({allOrg})
+        } catch (e) {
+            next(e)
+        }
+    }
+
+    async getOrgLink(req, res, next) {
+        try {
+            const {idOrg} = req.params
+            const org = await user_service.getOrgById(idOrg)
+            return res.status(200).json({
+                orgLink: org.orgLink,
+                nameOrg: org.nameOrg,
+                idOrg: org.idOrg
+            })
         } catch (e) {
             next(e)
         }

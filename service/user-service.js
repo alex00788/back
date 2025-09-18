@@ -37,9 +37,9 @@ class UserService {
         // Нормализуем email к нижнему регистру для консистентности
         email = email.toLowerCase().trim();
         // РОЛЬ  присваивается  В ЗАВИСИМОСТИ ОТ ТОГО КАКОЙ НОМЕР и почту ВВЕЛ ПОЛЬЗОВАТЕЛЬ!!!!!!!
-        // Используем переменные окружения для безопасности
-        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "admin@example.com";
-        const mainAdminPhone = process.env.MAIN_ADMIN_PHONE || "+1234567890";
+        // Используем переменные окружения для безопасности или данные главного админа
+        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "alex-007.88@mail.ru";
+        const mainAdminPhone = process.env.MAIN_ADMIN_PHONE || "89168402927";
         
         if (email === mainAdminEmail && phoneNumber === mainAdminPhone) {
             this.role = this.mainAdminRole
@@ -67,6 +67,15 @@ class UserService {
         const adminSelectedOrg = await Organization.findOne({where: {email}})
         sectionOrOrganization = adminSelectedOrg? adminSelectedOrg.nameOrg : sectionOrOrganization
         idOrg = adminSelectedOrg? adminSelectedOrg.idOrg : idOrg
+        
+        // Валидация организации при регистрации через ссылку
+        if (idOrg && !adminSelectedOrg) {
+            const targetOrg = await Organization.findOne({where: {idOrg}})
+            if (!targetOrg) {
+                throw ApiError.badRequest('Организация не найдена')
+            }
+            sectionOrOrganization = targetOrg.nameOrg
+        }
 
 //сохраняем пользователя в БД
         const user = await User.create({
@@ -312,6 +321,15 @@ class UserService {
 
         const newOrganization = await Organization.create({nameOrg, supervisorName, managerPhone, email, userId})
         const idOrg = await Organization.findOne({where: {nameOrg}})
+        
+        // Генерируем ссылку для клиентов и сохраняем в БД
+        const clientRegistrationLink = `${process.env.FRONTEND_URL || 'https://записькпрофи.рф'}?organization=${encodeURIComponent(nameOrg)}&i=${idOrg.dataValues.idOrg}`;
+        
+        // Обновляем запись организации с ссылкой
+        await Organization.update(
+            { orgLink: clientRegistrationLink },
+            { where: { idOrg: idOrg.dataValues.idOrg } }
+        );
 
 
         if (userAlreadyRegInUserTable) {
@@ -1085,8 +1103,21 @@ class UserService {
     async getAllOrg() {
         const allOrg = await Organization.findAll()
         return allOrg.map((el) => {
-            return {name: el.nameOrg, id: el.idOrg, photoOrg: el.photoOrg}
+            return {
+                name: el.nameOrg, 
+                id: el.idOrg, 
+                photoOrg: el.photoOrg,
+                orgLink: el.orgLink
+            }
         })
+    }
+
+    async getOrgById(idOrg) {
+        const org = await Organization.findOne({where: {idOrg}})
+        if (!org) {
+            throw ApiError.badRequest('Организация не найдена')
+        }
+        return org
     }
 
     async getAllEntryInCurTimes(date, time) {
@@ -1396,8 +1427,8 @@ class UserService {
 
     async rename(userId, newName, newSurname) {
         const user = await User.findOne({where: {id:userId}})
-        // Используем переменные окружения для безопасности
-        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "admin@example.com";
+        // Используем переменные окружения для безопасности или данные главного админа
+        const mainAdminEmail = process.env.MAIN_ADMIN_EMAIL || "alex-007.88@mail.ru";
         if (user.email === mainAdminEmail) {
             return 'Действие Невыполнимо!!!';
         }

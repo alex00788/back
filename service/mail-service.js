@@ -314,7 +314,7 @@ class MailService {
             })
     }
 
-    sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg, idOrg) {  // оповещение пользователю о том что организация добавлена
+    sendNotificationAboutSuccessfulAddNewOrg (emailNewOrg, nameOrg, idOrg, orgLink) {  // оповещение пользователю о том что организация добавлена
         this.transporter.sendMail({
                 from: process.env.SMTP_USER,
                 to: emailNewOrg,
@@ -323,11 +323,11 @@ class MailService {
                 html:
                     `<div>
                         <p> ${nameOrg} успешно добавлено! </p>
-                        <p> Ссылка чтобы клиенты сразу попадали в вашу организацию: https://записькпрофи.рф?organization=${nameOrg}&i=${idOrg}</p>
+                        <p> Ссылка чтобы клиенты сразу попадали в вашу организацию: ${orgLink}</p>
                         <br>
                         <p> Сохраните ее! И добавте к себе на сайт или страницу!</p>
                         <br>
-                        <a style="color: #5238fd" href='https://xn--80aneajyecjh1b5f.xn--p1ai/?organization=${nameOrg}&i=${idOrg}'> 
+                        <a style="color: #5238fd" href='${orgLink}'> 
                           Осталось Перейти -> и зарегистрироваться в свою организацию.
                         </a>
                     </div>
