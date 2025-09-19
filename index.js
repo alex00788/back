@@ -59,6 +59,17 @@ const start = async () => {
 
         await usServ.checkRecordForSendMail()   // запускает таймер отправки сообщения тем кто записан за 5 ч
 
+        // Периодическая очистка истекших токенов (каждый день в 2:00)
+        const tokenService = require('./service/token-service')
+        const cleanupInterval = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
+        setInterval(async () => {
+            try {
+                await tokenService.cleanupExpiredTokens()
+            } catch (error) {
+                console.error('Ошибка при периодической очистке токенов:', error)
+            }
+        }, cleanupInterval)
+
         app.listen(PORT, ()=> console.log(`!!!server started on port: ${PORT}`))
     } catch (e) {
         console.log(e)

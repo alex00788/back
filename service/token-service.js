@@ -78,6 +78,26 @@ class TokenService {
         return tokenData;
     }
 
+    // Очистка истекших токенов (вызывать периодически)
+    async cleanupExpiredTokens() {
+        try {
+            // Удаляем токены старше 30 дней
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const deletedCount = await tokenModel.destroy({
+                where: {
+                    createdAt: {
+                        [require('sequelize').Op.lt]: thirtyDaysAgo
+                    }
+                }
+            });
+            console.log(`Очищено ${deletedCount} истекших токенов`);
+            return deletedCount;
+        } catch (error) {
+            console.error('Ошибка при очистке токенов:', error);
+            return 0;
+        }
+    }
+
 
 }
 

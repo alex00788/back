@@ -13,7 +13,7 @@ router.post('/registration',
 router.post('/login', userController.login)
 router.post('/logout', userController.logout)
 router.get('/activate/:link', userController.activate)      //для активации по ссылки
-router.get('/refresh', userController.refresh)               //для обновления токена чтоб автоматом обновлялся и не редеректил но логин стр
+router.post('/refresh', userController.refresh)               //для обновления токена чтоб автоматом обновлялся и не редеректил но логин стр
 
 
 // в видео Продвинутая JWT авторизация на React и Node js    этого  Middleware  нету

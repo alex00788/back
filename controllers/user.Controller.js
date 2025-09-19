@@ -37,7 +37,12 @@ class UserController {
             const userData = await user_service.registration(email, nameUser, surnameUser, phoneNumber, sectionOrOrganization, idOrg, remainingFunds)
 
             // хранение рефрешТокена в куках
-            res.cookie('refreshToken', userData.refreshToken, {maxAge: 30, httpOnly: true})  //httpOnly: true, чтоб нельзя было изменить
+            res.cookie('refreshToken', userData.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней в миллисекундах
+                httpOnly: true, // чтоб нельзя было изменить через JavaScript
+                secure: process.env.NODE_ENV === 'production', // HTTPS в продакшене
+                sameSite: 'strict' // защита от CSRF атак
+            })
             // 1ое ключь сохранения    2ое то что сохраняем   чтоб это работало нужно в index.js подключить  app.use(cookie_parser())
             return res.json(userData)
         } catch (e) {
@@ -784,7 +789,12 @@ class UserController {
 
             // хранение рефрешТокена в куках
             // чтобы куки сохранялись нужно подключить в индексе  app.use(cookie_parser())   npm install cookie-parser
-            res.cookie('refreshToken', userData.refreshToken, {maxAge: 30, httpOnly: true})  //httpOnly: true  чтоб нельзя было изменить // maxAge время жизни куки
+            res.cookie('refreshToken', userData.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней в миллисекундах
+                httpOnly: true, // чтоб нельзя было изменить через JavaScript
+                secure: process.env.NODE_ENV === 'production', // HTTPS в продакшене
+                sameSite: 'strict' // защита от CSRF атак
+            })
             return res.json(userData)
         } catch (e) {
             next(e)
@@ -801,7 +811,12 @@ class UserController {
 
             //повторяем логику логина   генерируем - установим в куки - и вернем на клиент
             const userData = await user_service.refresh(refreshToken)   // тока  передаем refreshToken  и метод меняем
-            res.cookie('refreshToken', userData.refreshToken, {maxAge: 30, httpOnly: true})
+            res.cookie('refreshToken', userData.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 дней в миллисекундах
+                httpOnly: true, // чтоб нельзя было изменить через JavaScript
+                secure: process.env.NODE_ENV === 'production', // HTTPS в продакшене
+                sameSite: 'strict' // защита от CSRF атак
+            })
             return res.json(userData)
         } catch (e) {
             next(e)
@@ -816,11 +831,11 @@ class UserController {
             const {refreshToken} = req.cookies;
 
             //идем в сервис передаем туда токен  там метод который идет в токен сервис и удаляет из бд токен
-            // const token = await user_service.logout(refreshToken)
+            await user_service.logout(refreshToken)
 
             // удаляем саму куку
             res.clearCookie('refreshToken');
-            return res.status(200).json('token11111')
+            return res.status(200).json({message: 'Успешный выход из системы'})
 
         } catch (e) {
             next(e)
