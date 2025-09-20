@@ -365,6 +365,45 @@ class UserController {
         }
     }
 
+    //Функция удаления фото организации
+    async deletePhotoOrg(req, res, next) {
+        try {
+            const { orgId } = req.body;
+            
+            if (!orgId) {
+                return next(ApiError.badRequest('ID организации не указан'));
+            }
+
+            // Получаем информацию о фотографии для удаления
+            const deleteResult = await user_service.deletePhotoOrg(orgId);
+            
+            // Удаляем файл фотографии из папки static
+            if (deleteResult.oldPhoto && deleteResult.oldPhoto.length >= 1) {
+                const fs = require('fs');
+                const path = require('path');
+                
+                // Безопасное удаление файла с валидацией пути
+                const safePath = path.resolve(__dirname, '..', 'static', deleteResult.oldPhoto);
+                const staticDir = path.resolve(__dirname, '..', 'static');
+                
+                // Проверяем, что файл находится в папке static (защита от path traversal)
+                if (safePath.startsWith(staticDir)) {
+                    fs.unlink(safePath, err => {
+                        if (err) {
+                            console.error('Ошибка удаления файла:', err);
+                        } else {
+                            console.log('Фотография организации успешно удалена');
+                        }
+                    });
+                }
+            }
+            
+            return res.status(200).json({ message: 'Фотография организации удалена' });
+        } catch (e) {
+            next(e);
+        }
+    }
+
 
 
     //Добавление новой организации.

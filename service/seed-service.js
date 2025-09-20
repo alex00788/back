@@ -5,6 +5,7 @@ const DataUserAboutOrg = usModels.DataUserAboutOrg
 const bcrypt = require('bcrypt')
 const uuid = require('uuid')
 const ApiError = require('../error/ApiError')
+const { getMainUrl } = require("../config/domain.config");
 
 class SeedService {
     // Данные главного админа
@@ -208,7 +209,7 @@ class SeedService {
      * Генерирует ссылку для регистрации клиентов в главной организации
      */
     generateMainOrgLink(orgId) {
-        return `${process.env.FRONTEND_URL || 'https://записькпрофи.рф'}?organization=${encodeURIComponent(this.mainOrgData.nameOrg)}&i=${orgId}`
+        return `${process.env.FRONTEND_URL || getMainUrl()}?organization=${encodeURIComponent(this.mainOrgData.nameOrg)}&i=${orgId}`
     }
 
     /**

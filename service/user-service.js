@@ -8,6 +8,7 @@ const ApiError = require('../error/ApiError')
 const uuid = require('uuid')
 const crypto = require('crypto')
 const mailService = require('../service/mail-service')
+const { getMainUrl } = require("../config/domain.config");
 const token_service = require('../service/token-service')
 const UserDto = require('../dto/user_dto')
 const UserDtoForSaveToken = require('../dto/user_dto_for_saive')
@@ -323,7 +324,7 @@ class UserService {
         const idOrg = await Organization.findOne({where: {nameOrg}})
         
         // Генерируем ссылку для клиентов и сохраняем в БД
-        const clientRegistrationLink = `${process.env.FRONTEND_URL || 'https://записькпрофи.рф'}?organization=${encodeURIComponent(nameOrg)}&i=${idOrg.dataValues.idOrg}`;
+        const clientRegistrationLink = `${process.env.FRONTEND_URL || getMainUrl()}?organization=${encodeURIComponent(nameOrg)}&i=${idOrg.dataValues.idOrg}`;
         
         // Обновляем запись организации с ссылкой
         await Organization.update(
@@ -447,6 +448,17 @@ class UserService {
         org.photoOrg = idPhoto
         await org.save({fields: ['photoOrg']})
         return {oldPhoto, idPhoto}
+    }
+
+    async deletePhotoOrg(idOrg) {
+        const org = await Organization.findOne({where: {idOrg}})
+        if (!org) {
+            throw new Error('Организация не найдена')
+        }
+        const oldPhoto = org.dataValues.photoOrg
+        org.photoOrg = ""  // Очищаем поле фотографии в базе данных
+        await org.save({fields: ['photoOrg']})
+        return {oldPhoto}
     }
 
 

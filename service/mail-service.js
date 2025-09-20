@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer')
 const ApiError = require("../error/ApiError");
+const { getProjectName, getIdnUrl } = require("../config/domain.config");
 
 class MailService {
     constructor() {
@@ -45,7 +46,7 @@ class MailService {
                       <br> 
                       <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                       </p>   
                     </div>`
@@ -83,7 +84,7 @@ class MailService {
                     
                         <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                         </p>  
                     </div>`
@@ -105,7 +106,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                       <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>`
             },
@@ -131,7 +132,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                       <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>`
             },
@@ -155,7 +156,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                       <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                       <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>`
             },
@@ -179,7 +180,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                         <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                         <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>`
             },
@@ -207,7 +208,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
@@ -229,7 +230,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                         <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                         <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
@@ -257,7 +258,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
@@ -282,7 +283,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
@@ -304,7 +305,7 @@ class MailService {
                     </div>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
@@ -334,7 +335,7 @@ class MailService {
                     <br>
                     <p> С уважением, команда 
                         <strong style="color: #2630f1; cursor: pointer">
-                          <a href= 'https://xn--80aneajyecjh1b5f.xn--p1ai/'> ЗаписьКпрофи.рф </a>
+                          <a href= '${getIdnUrl()}/'> ${getProjectName()} </a>
                         </strong>
                     </p>  `
             },
