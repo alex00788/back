@@ -14,6 +14,10 @@ const cookieParser = require('cookie-parser')
 
 
 const app = express()   // приложение
+
+// Настройка trust proxy для корректной работы с reverse proxy и rate limiting
+app.set('trust proxy', 1)
+
 //настройки приложения
 app.use(express.json())
 app.use(express.static(path.resolve(__dirname, 'static')))   // чтоб сервак мог показать фотки из папки статик

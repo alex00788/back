@@ -40,6 +40,13 @@ const biometricRateLimit = rateLimit({
   message: 'Слишком много попыток биометрической аутентификации. Попробуйте позже.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Улучшенная обработка IP адресов для работы с прокси
+  keyGenerator: (req) => {
+    // Используем IP адрес с учетом прокси
+    return req.ip || req.connection.remoteAddress || 'unknown'
+  },
+  // Пропускаем успешные запросы
+  skipSuccessfulRequests: true,
 })
 
 // Валидация для биометрических данных
