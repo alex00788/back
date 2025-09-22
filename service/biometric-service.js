@@ -145,10 +145,15 @@ class BiometricService {
             }
 
             // Проверяем origin
-            const expectedOrigin = process.env.CLIENT_URL || 'http://localhost:4200';
-            if (clientData.origin !== expectedOrigin) {
-                await this.logBiometricAction(email, user.id, 'verify', false, 'Invalid origin', credential.id, req);
-                throw ApiError.badRequest('Неверный origin');
+            const expectedOrigins = [
+                process.env.CLIENT_URL || 'http://localhost:4200',
+                'http://62.76.90.163:63420',
+                'https://62.76.90.163:63420'
+            ];
+            
+            if (!expectedOrigins.includes(clientData.origin)) {
+                await this.logBiometricAction(email, user.id, 'verify', false, `Invalid origin: ${clientData.origin}`, credential.id, req);
+                throw ApiError.badRequest(`Неверный origin: ${clientData.origin}. Ожидался один из: ${expectedOrigins.join(', ')}`);
             }
 
             // Проверяем type
@@ -252,10 +257,15 @@ class BiometricService {
             }
 
             // Проверяем origin
-            const expectedOrigin = process.env.CLIENT_URL || 'http://localhost:4200';
-            if (clientData.origin !== expectedOrigin) {
-                await this.logBiometricAction(email, user.id, 'register', false, 'Invalid origin', credential.id, req);
-                throw ApiError.badRequest('Неверный origin');
+            const expectedOrigins = [
+                process.env.CLIENT_URL || 'http://localhost:4200',
+                'http://62.76.90.163:63420',
+                'https://62.76.90.163:63420'
+            ];
+            
+            if (!expectedOrigins.includes(clientData.origin)) {
+                await this.logBiometricAction(email, user.id, 'register', false, `Invalid origin: ${clientData.origin}`, credential.id, req);
+                throw ApiError.badRequest(`Неверный origin: ${clientData.origin}. Ожидался один из: ${expectedOrigins.join(', ')}`);
             }
 
             // Проверяем type
