@@ -1,4 +1,12 @@
 require('dotenv').config()
+console.log('=== ЗАПУСК СЕРВЕРА ===')
+console.log('Переменные окружения загружены')
+console.log('DB_NAME:', process.env.DB_NAME)
+console.log('DB_USER:', process.env.DB_USER)
+console.log('DB_HOST:', process.env.DB_HOST)
+console.log('DB_PORT:', process.env.DB_PORT)
+console.log('PORT:', process.env.PORT)
+console.log('NODE_ENV:', process.env.NODE_ENV)
 const express = require('express')
 const path = require('path')
 const sequelize = require('./db')
@@ -45,17 +53,29 @@ app.use(errorHandler)
 
 const start = async () => {
     try {
+        console.log('=== ПОДКЛЮЧЕНИЕ К БАЗЕ ДАННЫХ ===')
         await sequelize.authenticate()     //подключение к postgresql
+        console.log('Подключение к базе данных успешно!')
+        
+        console.log('=== СИНХРОНИЗАЦИЯ ТАБЛИЦ ===')
 // приводит таблицу в соответствие с моделью   //меняем при добавлении колонки
         await sequelize.sync({ alter: true })
+        console.log('Таблицы синхронизированы!')
 // создает таблицу при отсутствии
 //         await sequelize.sync()
 
 // await sequelize.sync({ force: true })   // не включать!!!!!!!!!!удаляет все!!!!! и создает новые
 
         // Инициализация главного админа при первом запуске
+        console.log('=== НАЧАЛО ИНИЦИАЛИЗАЦИИ СИСТЕМЫ ===')
         const seedService = require('./service/seed-service')
-        await seedService.initializeSystem()
+        try {
+            const result = await seedService.initializeSystem()
+            console.log('Результат инициализации:', result)
+        } catch (error) {
+            console.error('ОШИБКА при инициализации системы:', error)
+        }
+        console.log('=== КОНЕЦ ИНИЦИАЛИЗАЦИИ СИСТЕМЫ ===')
 
         await usServ.checkRecordForSendMail()   // запускает таймер отправки сообщения тем кто записан за 5 ч
 
@@ -70,6 +90,7 @@ const start = async () => {
             }
         }, cleanupInterval)
 
+        console.log('=== ЗАПУСК СЕРВЕРА ===')
         app.listen(PORT, ()=> console.log(`!!!server started on port: ${PORT}`))
     } catch (e) {
         console.log(e)

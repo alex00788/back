@@ -65,11 +65,13 @@ class SeedService {
      */
     async checkMainAdminExists() {
         try {
+            console.log('Ищем главного админа по email:', this.mainAdminData.email)
             const mainAdmin = await User.findOne({
                 where: {
                     email: this.mainAdminData.email
                 }
             })
+            console.log('Найденный админ:', mainAdmin ? 'ДА' : 'НЕТ')
             return !!mainAdmin
         } catch (error) {
             console.error('Ошибка при проверке существования главного админа:', error)
@@ -82,11 +84,13 @@ class SeedService {
      */
     async checkMainOrgExists() {
         try {
+            console.log('Ищем организацию по названию:', this.mainOrgData.nameOrg)
             const mainOrg = await Organization.findOne({
                 where: {
                     nameOrg: this.mainOrgData.nameOrg
                 }
             })
+            console.log('Найденная организация:', mainOrg ? 'ДА' : 'НЕТ')
             return !!mainOrg
         } catch (error) {
             console.error('Ошибка при проверке существования главной организации:', error)
@@ -235,10 +239,15 @@ class SeedService {
     async initializeSystem() {
         try {
             console.log('=== ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ===')
+            console.log('Проверяем существование главного админа...')
             
             // Проверяем, существует ли уже главный админ
             const adminExists = await this.checkMainAdminExists()
+            console.log('Админ существует:', adminExists)
+            
+            console.log('Проверяем существование организации...')
             const orgExists = await this.checkMainOrgExists()
+            console.log('Организация существует:', orgExists)
             
             if (adminExists && orgExists) {
                 console.log('Главный админ и организация уже существуют в системе')
@@ -287,18 +296,25 @@ class SeedService {
             console.log('Создание главного админа и организации с нуля...')
             
             // Создаем главного админа
+            console.log('ШАГ 1: Создаем главного админа...')
             const mainAdmin = await this.createMainAdmin()
+            console.log('Главный админ создан с ID:', mainAdmin.id)
             
             // Создаем главную организацию
+            console.log('ШАГ 2: Создаем главную организацию...')
             const mainOrg = await this.createMainOrganization(mainAdmin.id)
+            console.log('Главная организация создана с ID:', mainOrg.idOrg)
             
             // Обновляем ID организации у админа
+            console.log('ШАГ 3: Обновляем ID организации у админа...')
             await this.updateMainAdminOrgId(mainAdmin.id, mainOrg.idOrg)
             
             // Создаем настройки админа в организации
+            console.log('ШАГ 4: Создаем настройки админа в организации...')
             await this.createMainAdminOrgSettings(mainAdmin.id, mainOrg.idOrg)
             
             // Обновляем ссылку организации
+            console.log('ШАГ 5: Обновляем ссылку организации...')
             await this.updateMainOrgLink(mainOrg.idOrg)
 
             console.log('=== ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА ===')
